@@ -140,6 +140,18 @@ function addToOfflineQueue(item) {
 }
 
 /**
+ * Overwrite the offline queue with a new array.
+ * @param {Array} queue
+ */
+function setOfflineQueue(queue) {
+  try {
+    localStorage.setItem(OFFLINE_KEY, JSON.stringify(queue || []));
+  } catch (e) {
+    console.error("Offline queue write error:", e);
+  }
+}
+
+/**
  * Clear the offline queue.
  */
 function clearOfflineQueue() {
@@ -160,6 +172,7 @@ if (typeof module !== "undefined" && module.exports) {
     clearAuth,
     getOfflineQueue,
     addToOfflineQueue,
+    setOfflineQueue,
     clearOfflineQueue,
     OFFLINE_QUEUE_MAX,
   };

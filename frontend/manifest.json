@@ -1,0 +1,23 @@
+{
+  "name": "बोलता खाता - Bolta Khata",
+  "short_name": "Bolta Khata",
+  "description": "Voice-first digital ledger for Kirana shops — किराना दुकानों का आवाज़ से चलने वाला डिजिटल बही-खाता",
+  "theme_color": "#2E7D32",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./dashboard.html",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

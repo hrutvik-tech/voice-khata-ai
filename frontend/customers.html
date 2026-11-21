@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#2E7D32" />
   <title>Customers — Bolta Khata</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css" />
   <style>
     .search-wrapper {
@@ -62,9 +63,18 @@
           Customers
         </h1>
       </div>
-      <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 4px 12px; font-size: 13px; font-weight: 700; height: 32px; border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.8); color: #FFFFFF; background: rgba(255,255,255,0.15);">
-        🌐 हिंदी
-      </button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 4px 12px; font-size: 13px; font-weight: 700; height: 32px; border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.8); color: #FFFFFF; background: rgba(255,255,255,0.15);">
+          🌐 हिंदी
+        </button>
+        <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 32px; border: 1.5px solid rgba(255,255,255,0.8); color: #FFFFFF; background: rgba(255,255,255,0.15);" title="Logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Search bar -->
@@ -102,23 +112,19 @@
     <!-- Bottom navigation -->
     <nav class="navbar">
       <a href="dashboard.html" class="nav-item" data-tab="home">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon" style="font-size: 20px;">🏠</span>
         <span class="nav-label" data-i18n="navHome">Home</span>
       </a>
       <a href="customers.html" class="nav-item active" data-tab="customers">
-        <span class="nav-icon">👥</span>
+        <span class="nav-icon" style="font-size: 20px;">👥</span>
         <span class="nav-label" data-i18n="navCustomers">Customers</span>
       </a>
-      <a href="voice.html" class="nav-item nav-mic-btn" data-tab="voice" aria-label="Voice entry">
-        <span class="nav-icon">🎤</span>
+      <a href="voice.html" class="nav-mic-btn" data-tab="voice" aria-label="Voice entry">
+        <span class="nav-icon" style="font-size: 26px;">🎤</span>
       </a>
       <a href="history.html" class="nav-item" data-tab="history">
-        <span class="nav-icon">📋</span>
+        <span class="nav-icon" style="font-size: 20px;">📒</span>
         <span class="nav-label" data-i18n="navHistory">History</span>
-      </a>
-      <a href="index.html" class="nav-item" data-tab="logout" id="nav-logout">
-        <span class="nav-icon">🚪</span>
-        <span class="nav-label" data-i18n="navLogout">Logout</span>
       </a>
     </nav>
 
@@ -185,16 +191,20 @@
   <!-- Scripts -->
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/offline.js"></script>
   <script src="js/app.js"></script>
   <script src="js/lang.js"></script>
   <script src="js/customers.js"></script>
   <script>
     // Logout handler
-    document.getElementById("nav-logout").addEventListener("click", (e) => {
-      e.preventDefault();
-      clearAuth();
-      window.location.href = "index.html";
-    });
+    const btnLogout = document.getElementById("btn-logout");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", (e) => {
+        e.preventDefault();
+        clearAuth();
+        window.location.href = "index.html";
+      });
+    }
   </script>
 </body>
 </html>

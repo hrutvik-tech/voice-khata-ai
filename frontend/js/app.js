@@ -1,15 +1,19 @@
 /**
- * app.js — Shared utilities, auth checking, and navbar management for Bolta Khata.
+ * app.js — Shared utilities, auth checking, navbar management,
+ * offline sync initialization, and service worker registration for Bolta Khata.
  */
 
 /**
  * Check if the user is authenticated.
- * If not authenticated, redirects to index.html.
+ * If not authenticated and not already on the login page, redirects to index.html.
+ * @returns {boolean}
  */
 function checkAuth() {
+  const isLoginPage = window.location.pathname.endsWith("index.html") || window.location.pathname === "/";
   const token = typeof getToken === "function" ? getToken() : localStorage.getItem("bk_token");
+
   if (!token) {
-    if (!window.location.pathname.endsWith("index.html") && window.location.pathname !== "/") {
+    if (!isLoginPage) {
       window.location.href = "index.html";
     }
     return false;
@@ -90,6 +94,17 @@ function formatDate(isoDate) {
  * @param {"home"|"customers"|"voice"|"history"} [activeTab]
  */
 function initNavbar(activeTab) {
+  const isLoginPage = window.location.pathname.endsWith("index.html") || window.location.pathname === "/";
+  const navbar = document.querySelector(".navbar");
+
+  // Login page should not show bottom navigation bar
+  if (isLoginPage) {
+    if (navbar) navbar.style.display = "none";
+    return;
+  }
+
+  if (navbar) navbar.style.display = "flex";
+
   const currentPath = window.location.pathname.toLowerCase();
   const navItems = document.querySelectorAll(".nav-item");
 
@@ -97,17 +112,68 @@ function initNavbar(activeTab) {
     const tabName = item.getAttribute("data-tab");
     if (activeTab && tabName === activeTab) {
       item.classList.add("active");
-    } else if (!activeTab && currentPath.includes(item.getAttribute("href").toLowerCase())) {
+    } else if (!activeTab && item.getAttribute("href") && currentPath.includes(item.getAttribute("href").toLowerCase())) {
       item.classList.add("active");
     } else {
       item.classList.remove("active");
     }
   });
+
+  // Update voice badge count on navbar if offline manager is present
+  if (typeof updateVoiceBadge === "function") {
+    updateVoiceBadge();
+  }
 }
 
-// Auto-run navbar highlight if DOM is already loaded
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => initNavbar());
-} else {
+/**
+ * Initialize offline manager and check network connectivity.
+ */
+function initOffline() {
+  if (typeof initOfflineManager === "function") {
+    initOfflineManager();
+  } else if (typeof updateVoiceBadge === "function") {
+    updateVoiceBadge();
+    if (typeof detectOnline === "function") {
+      if (!detectOnline() && typeof showOfflineBanner === "function") {
+        showOfflineBanner();
+      } else if (typeof syncQueue === "function") {
+        syncQueue();
+      }
+    }
+  }
+}
+
+/**
+ * Register Progressive Web App Service Worker.
+ */
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then((reg) => {
+          console.log("Bolta Khata Service Worker registered:", reg.scope);
+        })
+        .catch((err) => {
+          console.warn("Service Worker registration failed:", err);
+        });
+    });
+  }
+}
+
+// Global page initialization
+function onAppInit() {
+  const isLoginPage = window.location.pathname.endsWith("index.html") || window.location.pathname === "/";
+  if (!isLoginPage) {
+    checkAuth();
+  }
   initNavbar();
+  initOffline();
+  registerServiceWorker();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", onAppInit);
+} else {
+  onAppInit();
 }
