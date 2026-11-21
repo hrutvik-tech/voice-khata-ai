@@ -419,42 +419,56 @@ body {
 .mb-4 { margin-bottom: 16px; }
 .hidden { display: none !important; }
 
-/* Dashboard Summary Cards Grid */
+/* Dashboard Summary Cards Grid (Bigger & Attractive 2-column layout) */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .summary-card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card.card-collection {
+  background: #F4FBF4;
+  border-color: #C8E6C9;
+}
+
+.summary-card.card-pending {
+  background: #FFFDF5;
+  border-color: #FFE082;
 }
 
 .summary-card .label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-muted);
   line-height: 1.3;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .summary-card .value {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
 }
 
 .value-debit { color: var(--danger); }
 .value-credit { color: var(--primary); }
-.value-pending { color: var(--accent-dark); }
+.value-pending { color: #E65100; }
 
 /* Transaction List Items */
 .txn-list {
@@ -697,4 +711,177 @@ body {
 .status-pill.debit {
   background: #FFEBEE;
   color: var(--danger);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Connection State Banner (bk-conn-banner)
+   Shown below the page-header on Home and Customers pages.
+   ═══════════════════════════════════════════════════════════════════════ */
+.bk-conn-banner {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  position: sticky;
+  top: 0;          /* sits just below the sticky page-header */
+  z-index: 49;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.bk-conn-banner--offline {
+  background: #FFF8E1;
+  color: #E65100;
+  border-bottom: 1px solid #FFCC80;
+}
+
+.bk-conn-banner--reconnecting {
+  background: #E3F2FD;
+  color: #1565C0;
+  border-bottom: 1px solid #90CAF9;
+}
+
+.bk-conn-banner--syncing {
+  background: #F3E5F5;
+  color: #6A1B9A;
+  border-bottom: 1px solid #CE93D8;
+}
+
+.bk-conn-banner--synced {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border-bottom: 1px solid #A5D6A7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Not-Saved Entry Cards (shown on Home dashboard)
+   ═══════════════════════════════════════════════════════════════════════ */
+#not-saved-container {
+  padding: 0 16px 0;
+}
+
+.not-saved-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  background: #FFF3E0;
+  border: 1.5px solid #FFB74D;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.not-saved-msg {
+  font-size: 13px;
+  color: #E65100;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.not-saved-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #BF360C;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.75;
+}
+.not-saved-close:hover { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Error Toast — unified component (uses existing .toast classes in app.js)
+   Extra REST-error emphasis:
+   ═══════════════════════════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 88px;        /* above bottom navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+  width: 100%;
+  max-width: 448px;
+  padding: 0 16px;
+}
+
+.toast {
+  background: #323232;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: auto;
+  max-width: 100%;
+  word-break: break-word;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success { background: #2E7D32; }
+.toast-error   { background: #C62828; }
+.toast-info    { background: #1565C0; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Font rules: English, Hindi (Devanagari), Kannada
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Devanagari (Hindi) text */
+[lang="hi"], :lang(hi),
+.hi-text {
+  font-family: "Noto Sans Devanagari", "Mangal", "Aparajita", sans-serif;
+}
+
+/* Kannada script */
+.kn-text,
+[lang="kn"] {
+  font-family: "Noto Sans Kannada", "Tunga", sans-serif;
+}
+
+/* Heard strip (voice transcript text) */
+.heard-strip {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari",
+               "Noto Sans Kannada", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  padding: 8px 12px;
+  background: #F8F9FA;
+  border-radius: var(--radius-sm);
+  margin: 8px 0;
+  word-break: break-word;
+}
+
+/* Customer name, badge — allow Devanagari & Kannada glyphs to render */
+.txn-name,
+.txn-avatar,
+.customer-name-cell,
+.status-pill {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari",
+               "Noto Sans Kannada", Roboto, Arial, sans-serif;
 }

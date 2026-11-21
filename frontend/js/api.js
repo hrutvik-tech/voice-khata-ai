@@ -290,67 +290,110 @@ async function transcribeAudio(audioBlob) {
 }
 
 /**
+ * Local storage helpers for customers to ensure they persist both online & offline
+ */
+const CUSTOMERS_STORAGE_KEY = "bk_customers";
+
+function getLocalStoredCustomers() {
+  try {
+    const raw = localStorage.getItem(CUSTOMERS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveLocalStoredCustomers(list) {
+  try {
+    localStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn("Storage save error:", e);
+  }
+}
+
+const DEFAULT_SEED_CUSTOMERS = [
+  {
+    id: 1,
+    name: "Ramesh Sharma",
+    phone: "9876543210",
+    area: "Lajpat Nagar",
+    balance_paise: 84000,
+    last_activity_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 2,
+    name: "Suresh Verma",
+    phone: "9123456780",
+    area: "Karol Bagh",
+    balance_paise: -50000,
+    last_activity_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 3,
+    name: "Anita Devi",
+    phone: "9988776655",
+    area: "Pitampura",
+    balance_paise: 125000,
+    last_activity_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 4,
+    name: "Anil Gupta",
+    phone: "9811223344",
+    area: "Rohini",
+    balance_paise: 0,
+    last_activity_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 5,
+    name: "Priya Singh",
+    phone: "9700112233",
+    area: "Dwarka",
+    balance_paise: 200000,
+    last_activity_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+/**
  * Fetch customer list from API.
- * Falls back to 5 demo customers if backend is offline.
+ * Falls back to locally stored customers if backend is offline.
  * @param {string} [search=""] - Search query
  * @returns {Promise<object>}
  */
 async function getCustomers(search = "") {
   const query = search ? `?search=${encodeURIComponent(search)}` : "";
   const res = await apiCall(`/customers${query}`, "GET");
-  if (res.ok && Array.isArray(res.data)) return res;
+  if (res.ok && Array.isArray(res.data)) {
+    saveLocalStoredCustomers(res.data);
+    return res;
+  }
 
-  // Demo fallback customers (balance_paise: positive = shop to collect, negative = shop owes)
+  // Demo fallback customers: load from local storage or initialize with defaults
+  let localList = getLocalStoredCustomers();
+  if (!localList || !Array.isArray(localList) || localList.length === 0) {
+    localList = DEFAULT_SEED_CUSTOMERS;
+    saveLocalStoredCustomers(localList);
+  }
+
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase();
+    const filtered = localList.filter((c) => {
+      const name = (c.name || "").toLowerCase();
+      const phone = (c.phone || "").toLowerCase();
+      return name.includes(q) || phone.includes(q);
+    });
+    return { ok: true, data: filtered };
+  }
+
   return {
     ok: true,
-    data: [
-      {
-        id: 1,
-        name: "Ramesh Sharma",
-        phone: "9876543210",
-        area: "Lajpat Nagar",
-        balance_paise: 84000,
-        last_activity_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 2,
-        name: "Suresh Verma",
-        phone: "9123456780",
-        area: "Karol Bagh",
-        balance_paise: -50000,
-        last_activity_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 3,
-        name: "Anita Devi",
-        phone: "9988776655",
-        area: "Pitampura",
-        balance_paise: 125000,
-        last_activity_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 4,
-        name: "Anil Gupta",
-        phone: "9811223344",
-        area: "Rohini",
-        balance_paise: 0,
-        last_activity_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 5,
-        name: "Priya Singh",
-        phone: "9700112233",
-        area: "Dwarka",
-        balance_paise: 200000,
-        last_activity_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
+    data: localList,
   };
 }
 
 /**
  * Add a new customer via API.
- * Falls back to demo success if backend is offline.
+ * Falls back to local persistent store if backend is offline.
  * @param {string} name
  * @param {string|null} phone
  * @param {boolean} [confirm=false] - Confirm despite similar-name warning
@@ -364,20 +407,38 @@ async function addCustomerApi(name, phone = null, confirm = false) {
     confirm,
   });
 
-  if (res.ok || res.status === 409) return res;
+  if (res.ok && res.data && res.data.customer) {
+    // Backend returned 201 with customer
+    const cust = res.data.customer;
+    let list = getLocalStoredCustomers() || [...DEFAULT_SEED_CUSTOMERS];
+    list.unshift(cust);
+    saveLocalStoredCustomers(list);
+    return res;
+  }
 
-  // Demo fallback when backend is offline
+  if (res.status === 409) return res;
+
+  // Demo fallback when backend is offline: store locally and return success
+  const newCustomer = {
+    id: Date.now(),
+    name: name.trim(),
+    phone: phone && phone.trim() ? phone.trim() : null,
+    area: null,
+    balance_paise: 0,
+    last_activity_at: new Date().toISOString(),
+  };
+
+  let list = getLocalStoredCustomers();
+  if (!list || !Array.isArray(list)) {
+    list = [...DEFAULT_SEED_CUSTOMERS];
+  }
+  list.unshift(newCustomer);
+  saveLocalStoredCustomers(list);
+
   return {
     ok: true,
     status: 201,
-    data: {
-      id: Date.now(),
-      name: name.trim(),
-      phone: phone ? phone.trim() : null,
-      area: null,
-      balance_paise: 0,
-      last_activity_at: new Date().toISOString(),
-    },
+    data: newCustomer,
   };
 }
 

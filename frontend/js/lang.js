@@ -118,6 +118,18 @@ const TRANSLATIONS = {
     btnLoadMore: "Load More",
     creditPrefix: "↓ Credit",
     debitPrefix: "↑ Debit",
+
+    // Connection / Offline banner messages
+    bannerOfflineWithQueue: "⚠️ Internet nahi hai — {count} entr{plural} wait kar rahi hain",
+    bannerOfflineNoQueue:   "⚠️ Internet nahi hai — bolte rahiye, entry baad mein jud jayegi",
+    bannerReconnecting:     "🔄 Dobara jud raha hai…",
+    bannerSyncing:          "⏳ Entry sync ho rahi hain…",
+    bannerSynced:           "✅ Sab entry jud gayi",
+
+    // Not-saved entry card
+    notSavedPrefix:  "⚠️ Offline entry save nahi hui:",
+    notSavedSuffix:  "— dobara boliye",
+    totalLending:    "Total Lending",
   },
 
   hi: {
@@ -233,6 +245,18 @@ const TRANSLATIONS = {
     btnLoadMore: "और दिखाएं",
     creditPrefix: "↓ जमा",
     debitPrefix: "↑ उधार",
+
+    // Connection / Offline banner messages (Hindi matches English text as requested)
+    bannerOfflineWithQueue: "⚠️ Internet nahi hai — {count} entr{plural} wait kar rahi hain",
+    bannerOfflineNoQueue:   "⚠️ Internet nahi hai — bolte rahiye, entry baad mein jud jayegi",
+    bannerReconnecting:     "🔄 Dobara jud raha hai…",
+    bannerSyncing:          "⏳ Entry sync ho rahi hain…",
+    bannerSynced:           "✅ Sab entry jud gayi",
+
+    // Not-saved entry card
+    notSavedPrefix:  "⚠️ Offline entry save nahi hui:",
+    notSavedSuffix:  "— dobara boliye",
+    totalLending:    "कुल उधार",
   },
 };
 
@@ -347,6 +371,116 @@ function initLang() {
       setAppLanguage(active === "en" ? "hi" : "en");
     });
   }
+}
+
+// ─── Global Customer Name Translation ─────────────────────────────────────────
+const GLOBAL_NAME_MAP_EN_TO_HI = {
+  "ramesh sharma": "रमेश शर्मा",
+  "ramesh kumar": "रमेश कुमार",
+  "ramesh": "रमेश",
+  "suresh verma": "सुरेश वर्मा",
+  "suresh": "सुरेश",
+  "anita devi": "अनिता देवी",
+  "anita": "अनिता",
+  "anil gupta": "अनिल गुप्ता",
+  "anil": "अनिल",
+  "priya singh": "प्रिया सिंह",
+  "priya": "प्रिया",
+  "sunil kumar": "सुनील कुमार",
+  "sunil": "सुनील",
+  "rahul": "राहुल",
+  "amit": "अमित",
+  "rohit": "रोहित",
+  "deepak": "दीपक",
+  "manoj": "मनोज",
+  "vikas": "विकास",
+  "pooja": "पूजा",
+  "neha": "नेहा",
+  "rekha": "रेखा",
+  "sunita": "सुनीता",
+  "geeta": "गीता",
+  "sharma": "शर्मा",
+  "verma": "वर्मा",
+  "singh": "सिंह",
+  "gupta": "गुप्ता",
+  "devi": "देवी",
+  "kumar": "कुमार",
+  "customer": "ग्राहक",
+  "offline customer": "ऑफ़लाइन ग्राहक",
+};
+
+const GLOBAL_NAME_MAP_HI_TO_EN = {
+  "रमेश शर्मा": "Ramesh Sharma",
+  "रमेश कुमार": "Ramesh Kumar",
+  "रमेश": "Ramesh",
+  "सुरेश वर्मा": "Suresh Verma",
+  "सुरेश": "Suresh",
+  "अनिता देवी": "Anita Devi",
+  "अनिता": "Anita",
+  "अनिल गुप्ता": "Anil Gupta",
+  "अनिल": "Anil",
+  "प्रिया सिंह": "Priya Singh",
+  "प्रिया": "Priya",
+  "सुनील कुमार": "Sunil Kumar",
+  "सुनील": "Sunil",
+  "राहुल": "Rahul",
+  "अमित": "Amit",
+  "रोहित": "Rohit",
+  "दीपक": "Deepak",
+  "मनोज": "Manoj",
+  "विकास": "Vikas",
+  "पूजा": "Pooja",
+  "नेहा": "Neha",
+  "रेखा": "Rekha",
+  "सुनीता": "Sunita",
+  "गीता": "Geeta",
+  "शर्मा": "Sharma",
+  "वर्मा": "Verma",
+  "सिंह": "Singh",
+  "गुप्ता": "Gupta",
+  "देवी": "Devi",
+  "कुमार": "Kumar",
+  "ग्राहक": "Customer",
+  "ऑफ़लाइन ग्राहक": "Offline Customer",
+};
+
+function getLocalizedCustomerName(customerOrName, targetLang) {
+  const lang = targetLang || currentLanguage();
+  const rawName = typeof customerOrName === "object" && customerOrName
+    ? (customerOrName.name || "")
+    : String(customerOrName || "");
+
+  const trimmed = rawName.trim();
+  if (!trimmed) return lang === "hi" ? "ग्राहक" : "Customer";
+
+  if (lang === "hi") {
+    if (typeof customerOrName === "object" && customerOrName && customerOrName.name_hi) {
+      return customerOrName.name_hi;
+    }
+    const lower = trimmed.toLowerCase();
+    if (GLOBAL_NAME_MAP_EN_TO_HI[lower]) return GLOBAL_NAME_MAP_EN_TO_HI[lower];
+    const parts = lower.split(/\s+/);
+    const translated = parts.map((p) => GLOBAL_NAME_MAP_EN_TO_HI[p] || p);
+    if (translated.some((p) => /[\u0900-\u097F]/.test(p))) {
+      return translated.join(" ");
+    }
+    return trimmed;
+  } else {
+    if (typeof customerOrName === "object" && customerOrName && customerOrName.name_en) {
+      return customerOrName.name_en;
+    }
+    if (GLOBAL_NAME_MAP_HI_TO_EN[trimmed]) return GLOBAL_NAME_MAP_HI_TO_EN[trimmed];
+    const parts = trimmed.split(/\s+/);
+    const translated = parts.map((p) => GLOBAL_NAME_MAP_HI_TO_EN[p] || p);
+    if (translated.some((p) => /^[A-Za-z]/.test(p))) {
+      return translated.join(" ");
+    }
+    return trimmed;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.getLocalizedCustomerName = getLocalizedCustomerName;
 }
 
 // Auto-init when DOM is ready
