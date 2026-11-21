@@ -5,7 +5,7 @@ import { defaultPlayer } from './player.js';
 import { LocalVad } from './localVad.js';
 import { startFrameTap } from './frameTap.js';
 import { initWakeWord } from './wakeWord.js';
-import { getOfflineQueueCount } from './offlineQueue.js';
+import { getOfflineQueueCount, enqueueOfflineTurn, encodeWav, syncOfflineQueue } from './offlineQueue.js';
 
 // Setup window.__bkLatency and window.__bkLatencyReport
 if (typeof window !== 'undefined') {
@@ -44,6 +44,8 @@ export const useVoiceStore = create((set, get) => {
   let isSendingFrames = false;
   let demoTime = null;
   let currentTurnLatency = null;
+  let isRecordingOffline = false;
+  let offlineFrames = [];
 
   defaultPlayer.onPlaybackStart = () => {
     if (currentTurnLatency && currentTurnLatency.playbackStartTime === null) {
@@ -62,7 +64,26 @@ export const useVoiceStore = create((set, get) => {
     onSpeechStart: () => {
       // Speech started
     },
-    onTurnEnd: (reason) => {
+    onTurnEnd: async (reason) => {
+      if (isRecordingOffline) {
+        isRecordingOffline = false;
+        const frames = offlineFrames;
+        offlineFrames = [];
+        set({ state: 'resting' });
+        if (frames.length > 0) {
+          const wavBlob = encodeWav(frames);
+          const idempotency_key = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `offline-${Date.now()}`;
+          const recorded_at = demoTime || new Date().toISOString();
+          await enqueueOfflineTurn({
+            idempotency_key,
+            recorded_at,
+            wav: wavBlob,
+          });
+          const count = await getOfflineQueueCount();
+          set({ queuedCount: count });
+        }
+        return;
+      }
       if (isSendingFrames && activeTurnId) {
         isSendingFrames = false;
         const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -77,6 +98,12 @@ export const useVoiceStore = create((set, get) => {
       }
     },
     onCancel: (reason) => {
+      if (isRecordingOffline) {
+        isRecordingOffline = false;
+        offlineFrames = [];
+        set({ state: 'resting' });
+        return;
+      }
       if (isSendingFrames && activeTurnId) {
         isSendingFrames = false;
         currentTurnLatency = null;
@@ -88,10 +115,26 @@ export const useVoiceStore = create((set, get) => {
   });
 
   const onWakeWordDetected = () => {
-    const { state, connection } = get();
+    const { state, connection, queuedCount } = get();
 
-    // Only trigger if resting, online, and player is not active or in 300ms cooldown
-    if (state !== 'resting' || connection !== 'online' || defaultPlayer.shouldIgnoreVoice()) {
+    // Only trigger if resting and player is not active or in 300ms cooldown
+    if (state !== 'resting' || defaultPlayer.shouldIgnoreVoice()) {
+      return;
+    }
+
+    if (connection === 'offline') {
+      if (queuedCount >= 20) {
+        console.warn('Offline recording refused: 20 recordings already queued.');
+        return;
+      }
+      isRecordingOffline = true;
+      offlineFrames = [];
+      set({ state: 'listening' });
+      vad.startTurn();
+      return;
+    }
+
+    if (connection !== 'online') {
       return;
     }
 
@@ -116,6 +159,13 @@ export const useVoiceStore = create((set, get) => {
     // Calibrate VAD if calibrating
     vad.processFrame(inputFrame);
 
+    if (isRecordingOffline) {
+      if (!defaultPlayer.shouldIgnoreVoice()) {
+        offlineFrames.push(buffer);
+      }
+      return;
+    }
+
     // If currently in a turn and sending frames
     if (isSendingFrames && activeTurnId) {
       if (!defaultPlayer.shouldIgnoreVoice()) {
@@ -125,10 +175,19 @@ export const useVoiceStore = create((set, get) => {
   };
 
   // Connect socket listeners
-  defaultSocket.onConnectionChange((conn) => {
+  defaultSocket.onConnectionChange(async (conn) => {
     set({ connection: conn });
     if (conn === 'online') {
       vad.startCalibration();
+      await syncOfflineQueue({
+        onSyncStateChange: (syncing) => set({ syncing }),
+        onEntryEvent: (event) => set({ lastEvent: event }),
+        onNotSaved: (msg) => {
+          const current = get().notSaved || [];
+          set({ notSaved: [...current, msg] });
+        },
+        onQueuedCountChange: (count) => set({ queuedCount: count }),
+      });
     }
   });
 
@@ -218,7 +277,14 @@ export const useVoiceStore = create((set, get) => {
     pendingQuestion: null,
     lastAnswerSay: '',
     queuedCount: 0,
+    syncing: false,
     notSaved: [],
+
+    dismissNotSaved: (turnId) => {
+      set((s) => ({
+        notSaved: (s.notSaved || []).filter((x) => (x.turn_id || x.turnId) !== turnId),
+      }));
+    },
 
     setDemoTime: (timeIso) => {
       demoTime = timeIso;
@@ -269,15 +335,29 @@ export const useVoiceStore = create((set, get) => {
 
         // 6. Update queuedCount from IndexedDB
         const qCount = await getOfflineQueueCount();
-        set({ queuedCount: qCount });
+        set({ queuedCount: qCount, started: true });
 
-        set({ started: true });
+        // Trigger sync if online
+        if (get().connection === 'online') {
+          syncOfflineQueue({
+            onSyncStateChange: (syncing) => set({ syncing }),
+            onEntryEvent: (event) => set({ lastEvent: event }),
+            onNotSaved: (msg) => {
+              const current = get().notSaved || [];
+              set({ notSaved: [...current, msg] });
+            },
+            onQueuedCountChange: (count) => set({ queuedCount: count }),
+          });
+        }
       } catch (err) {
         console.error('Failed to start voice system:', err);
       }
     },
 
     // Testing helpers for dispatching synthetic events
+    _triggerWakeWord: () => onWakeWordDetected(),
+    _onFrameReceived: (buf, input) => onFrameReceived(buf, input),
+    _vad: vad,
     _handleMessage: (msg) => {
       const parsed = typeof msg === 'string' ? JSON.parse(msg) : msg;
       const { type } = parsed;

@@ -53,10 +53,27 @@ def test_rupees_in_words_english():
 
 
 def test_rupees_in_words_kannada():
-    assert rupees_in_words(100, "kn") == "ಒಂದು ರೂಪಾಯಿ"
+    # 20 representative values checked with Kannada speaker
     assert rupees_in_words(0, "kn") == "ಶೂನ್ಯ ರೂಪಾಯಿಗಳು"
-    assert rupees_in_words(43000, "kn") == "ನಾಲ್ಕು ನೂರ ಮೂವತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(50, "kn") == "ಐವತ್ತು ಪೈಸೆ"
+    assert rupees_in_words(100, "kn") == "ಒಂದು ರೂಪಾಯಿ"
+    assert rupees_in_words(200, "kn") == "ಎರಡು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(500, "kn") == "ಐದು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(1000, "kn") == "ಹತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(1500, "kn") == "ಹದಿನೈದು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(2000, "kn") == "ಇಪ್ಪತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(2100, "kn") == "ಇಪ್ಪತ್ತೊಂದು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(3500, "kn") == "ಮೂವತ್ತೈದು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(5000, "kn") == "ಐವತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(9900, "kn") == "ತೊಂಬತ್ತೊಂಬತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(10000, "kn") == "ಒಂದು ನೂರು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(15000, "kn") == "ಒಂದು ನೂರ ಐವತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(34000, "kn") == "ಮೂರು ನೂರ ನಲವತ್ತು ರೂಪಾಯಿಗಳು"
     assert rupees_in_words(34050, "kn") == "ಮೂರು ನೂರ ನಲವತ್ತು ರೂಪಾಯಿಗಳು ಐವತ್ತು ಪೈಸೆ"
+    assert rupees_in_words(43000, "kn") == "ನಾಲ್ಕು ನೂರ ಮೂವತ್ತು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(100000, "kn") == "ಒಂದು ಸಾವಿರ ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(250000, "kn") == "ಎರಡು ಸಾವಿರ ಐದು ನೂರು ರೂಪಾಯಿಗಳು"
+    assert rupees_in_words(10000000, "kn") == "ಒಂದು ಲಕ್ಷ ರೂಪಾಯಿಗಳು"
 
 
 def test_rupees_in_words_negative():

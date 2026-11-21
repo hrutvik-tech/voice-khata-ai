@@ -174,7 +174,7 @@ KANNADA_TENS_STANDALONE: dict[int, str] = {
     90: "ತೊಂಬತ್ತು",
 }
 
-KANNADA_TENS_PREFIX: dict[int, str] = {
+KANNADA_TENS_STEM: dict[int, str] = {
     20: "ಇಪ್ಪತ್ತ",
     30: "ಮೂವತ್ತ",
     40: "ನಲವತ್ತ",
@@ -183,6 +183,18 @@ KANNADA_TENS_PREFIX: dict[int, str] = {
     70: "ಎಪ್ಪತ್ತ",
     80: "ಎಂಬತ್ತ",
     90: "ತೊಂಬತ್ತ",
+}
+
+KANNADA_UNIT_ENDINGS: dict[int, str] = {
+    1: "ೊಂದು",
+    2: "ೆರಡು",
+    3: "ಮೂರು",
+    4: "ನಾಲ್ಕು",
+    5: "ೈದು",
+    6: "ಾರು",
+    7: "ೇಳು",
+    8: "ೆಂಟು",
+    9: "ೊಂಬತ್ತು",
 }
 
 
@@ -209,7 +221,12 @@ def _kannada_under_100(n: int) -> str:
     unit = n % 10
     if unit == 0:
         return KANNADA_TENS_STANDALONE[tens]
-    return f"{KANNADA_TENS_PREFIX[tens]}{KANNADA_1_TO_9[unit]}"
+
+    stem = KANNADA_TENS_STEM[tens]
+    ending = KANNADA_UNIT_ENDINGS[unit]
+    if unit in {3, 4}:
+        return stem + ending
+    return stem.rstrip("\u0ccd") + ending
 
 
 def _indian_breakdown(num: int) -> tuple[int, int, int, int, int]:
@@ -273,7 +290,6 @@ def _number_to_kannada(num: int) -> str:
     if thousand > 0:
         parts.append(f"{_kannada_under_100(thousand)} ಸಾವಿರ")
     if hundred > 0:
-        # e.g., "ನಾಲ್ಕು ನೂರ ಮೂವತ್ತು" or "ಮೂರು ನೂರ ನಲವತ್ತು"
         if rem > 0:
             parts.append(f"{KANNADA_1_TO_9[hundred]} ನೂರ")
         else:
