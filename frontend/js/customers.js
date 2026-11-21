@@ -111,6 +111,7 @@ function getLocalizedCustomerName(customer, lang) {
 // ─── State ────────────────────────────────────────────────────────────────────
 let allCustomers = [];
 let isAddingCustomer = false;
+let activeAddDirection = "credit"; // "credit" (जमा / Received) | "debit" (उधार / Given)
 
 // ─── On Page Load ─────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -129,6 +130,16 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       openAddModal();
     });
+  }
+
+  // Direction toggle buttons in modal
+  const btnCredit = document.getElementById("btn-type-credit");
+  const btnDebit = document.getElementById("btn-type-debit");
+  if (btnCredit) {
+    btnCredit.addEventListener("click", () => setAddDirection("credit"));
+  }
+  if (btnDebit) {
+    btnDebit.addEventListener("click", () => setAddDirection("debit"));
   }
 
   // Modal close button
@@ -157,10 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Allow pressing Enter in customer name/phone inputs to save
+  // Allow pressing Enter in inputs to save
   const nameInput = document.getElementById("customer-name-input");
   const phoneInput = document.getElementById("customer-phone-input");
-  [nameInput, phoneInput].forEach((inp) => {
+  const amountInput = document.getElementById("customer-amount-input");
+  [nameInput, phoneInput, amountInput].forEach((inp) => {
     if (inp) {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -181,6 +193,35 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCustomers();
   initNavbar("customers");
 });
+
+function setAddDirection(dir) {
+  activeAddDirection = dir;
+  const btnCredit = document.getElementById("btn-type-credit");
+  const btnDebit = document.getElementById("btn-type-debit");
+  if (!btnCredit || !btnDebit) return;
+
+  if (dir === "credit") {
+    btnCredit.classList.add("active");
+    btnDebit.classList.remove("active");
+    btnCredit.style.borderColor = "#2E7D32";
+    btnCredit.style.background = "#E8F5E9";
+    btnCredit.style.color = "#2E7D32";
+
+    btnDebit.style.borderColor = "#E0E0E0";
+    btnDebit.style.background = "#FFFFFF";
+    btnDebit.style.color = "#757575";
+  } else {
+    btnDebit.classList.add("active");
+    btnCredit.classList.remove("active");
+    btnDebit.style.borderColor = "#C62828";
+    btnDebit.style.background = "#FFEBEE";
+    btnDebit.style.color = "#C62828";
+
+    btnCredit.style.borderColor = "#E0E0E0";
+    btnCredit.style.background = "#FFFFFF";
+    btnCredit.style.color = "#757575";
+  }
+}
 
 // ─── Load Customers ───────────────────────────────────────────────────────────
 async function loadCustomers() {
@@ -329,6 +370,21 @@ function openAddModal() {
     }
     const phoneInput = document.getElementById("customer-phone-input");
     if (phoneInput) phoneInput.value = "";
+
+    const amountInput = document.getElementById("customer-amount-input");
+    if (amountInput) amountInput.value = "";
+
+    setAddDirection("credit");
+
+    // Populate current date and time (YYYY-MM-DDTHH:MM)
+    const datetimeInput = document.getElementById("customer-datetime-input");
+    if (datetimeInput) {
+      const now = new Date();
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
+      datetimeInput.value = localISOTime;
+    }
+
     const confirmRow = document.getElementById("similar-confirm-row");
     if (confirmRow) confirmRow.style.display = "none";
   }
@@ -344,6 +400,8 @@ function closeAddModal() {
   if (nameInput) nameInput.value = "";
   const phoneInput = document.getElementById("customer-phone-input");
   if (phoneInput) phoneInput.value = "";
+  const amountInput = document.getElementById("customer-amount-input");
+  if (amountInput) amountInput.value = "";
   const confirmRow = document.getElementById("similar-confirm-row");
   if (confirmRow) confirmRow.style.display = "none";
   isAddingCustomer = false;
@@ -355,10 +413,23 @@ async function handleAddCustomer() {
 
   const nameInput = document.getElementById("customer-name-input");
   const phoneInput = document.getElementById("customer-phone-input");
+  const amountInput = document.getElementById("customer-amount-input");
+  const datetimeInput = document.getElementById("customer-datetime-input");
   const confirmCheckbox = document.getElementById("confirm-similar");
 
   const name = (nameInput?.value || "").trim();
   const phone = (phoneInput?.value || "").trim();
+  const amountVal = parseFloat(amountInput?.value || "0") || 0;
+  const amountPaise = Math.round(amountVal * 100);
+
+  // Parse datetime input into ISO string
+  let chosenISO = new Date().toISOString();
+  if (datetimeInput && datetimeInput.value) {
+    const parsed = new Date(datetimeInput.value);
+    if (!isNaN(parsed.getTime())) {
+      chosenISO = parsed.toISOString();
+    }
+  }
 
   if (!name) {
     showToast(t("pleaseEnterName", "Please enter customer name"), "error");
@@ -370,7 +441,11 @@ async function handleAddCustomer() {
   setSaveBtnLoading(true);
 
   const confirm = confirmCheckbox && confirmCheckbox.checked;
-  const res = await addCustomerApi(name, phone, confirm);
+  const res = await addCustomerApi(name, phone, confirm, {
+    amount_paise: amountPaise,
+    direction: activeAddDirection,
+    recorded_at: chosenISO,
+  });
 
   setSaveBtnLoading(false);
   isAddingCustomer = false;

@@ -183,6 +183,28 @@ async function getDashboardSummary() {
   };
 }
 
+// ─── Local Transaction Storage Helpers ───────────────────────────────────────
+const TRANSACTIONS_STORAGE_KEY = "bk_transactions";
+
+function getLocalStoredTransactions() {
+  try {
+    const raw = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLocalTransaction(txn) {
+  try {
+    const list = getLocalStoredTransactions();
+    list.unshift(txn);
+    localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn("Storage save error:", e);
+  }
+}
+
 /**
  * Fetch transactions list for given date.
  * Calls GET /api/transactions?date=today
@@ -193,43 +215,47 @@ async function getTransactions(date = "today") {
   const res = await apiCall(`/api/transactions?date=${encodeURIComponent(date)}`, "GET");
   if (res.ok && Array.isArray(res.data) && res.data.length > 0) return res;
 
+  const localList = getLocalStoredTransactions();
+
   // Demo fallback transactions if backend is offline
+  const defaultDemoList = [
+    {
+      id: 101,
+      customer_name: "Ramesh Sharma",
+      amount_paise: 34000,
+      direction: "credit",
+      recorded_at: new Date(Date.now() - 12 * 60000).toISOString(),
+      source: "voice",
+    },
+    {
+      id: 102,
+      customer_name: "Suresh Verma",
+      amount_paise: 50000,
+      direction: "debit",
+      recorded_at: new Date(Date.now() - 35 * 60000).toISOString(),
+      source: "voice",
+    },
+    {
+      id: 103,
+      customer_name: "Anita Devi",
+      amount_paise: 25000,
+      direction: "credit",
+      recorded_at: new Date(Date.now() - 85 * 60000).toISOString(),
+      source: "manual",
+    },
+    {
+      id: 104,
+      customer_name: "Anil Gupta",
+      amount_paise: 120000,
+      direction: "debit",
+      recorded_at: new Date(Date.now() - 140 * 60000).toISOString(),
+      source: "voice",
+    },
+  ];
+
   return {
     ok: true,
-    data: [
-      {
-        id: 101,
-        customer_name: "Ramesh Sharma",
-        amount_paise: 34000,
-        direction: "credit",
-        recorded_at: new Date(Date.now() - 12 * 60000).toISOString(),
-        source: "voice",
-      },
-      {
-        id: 102,
-        customer_name: "Suresh Verma",
-        amount_paise: 50000,
-        direction: "debit",
-        recorded_at: new Date(Date.now() - 35 * 60000).toISOString(),
-        source: "voice",
-      },
-      {
-        id: 103,
-        customer_name: "Anita Devi",
-        amount_paise: 25000,
-        direction: "credit",
-        recorded_at: new Date(Date.now() - 85 * 60000).toISOString(),
-        source: "manual",
-      },
-      {
-        id: 104,
-        customer_name: "Anil Gupta",
-        amount_paise: 120000,
-        direction: "debit",
-        recorded_at: new Date(Date.now() - 140 * 60000).toISOString(),
-        source: "voice",
-      },
-    ],
+    data: [...localList, ...defaultDemoList],
   };
 }
 
@@ -241,6 +267,13 @@ async function getTransactions(date = "today") {
  */
 async function createTransaction(transactionData) {
   const res = await apiCall("/api/transactions", "POST", transactionData);
+  saveLocalTransaction({
+    id: Date.now(),
+    ...transactionData,
+    recorded_at: transactionData.recorded_at || new Date().toISOString(),
+    status: "new",
+  });
+
   if (res.ok) return res;
 
   // Demo fallback
@@ -394,12 +427,14 @@ async function getCustomers(search = "") {
 /**
  * Add a new customer via API.
  * Falls back to local persistent store if backend is offline.
+ * Supports initial transaction amount, direction, and recorded_at.
  * @param {string} name
  * @param {string|null} phone
  * @param {boolean} [confirm=false] - Confirm despite similar-name warning
+ * @param {object|null} [initialTxn=null] - { amount_paise, direction, recorded_at }
  * @returns {Promise<object>}
  */
-async function addCustomerApi(name, phone = null, confirm = false) {
+async function addCustomerApi(name, phone = null, confirm = false, initialTxn = null) {
   const res = await apiCall("/customers", "POST", {
     name: name.trim(),
     phone: phone ? phone.trim() : null,
@@ -407,12 +442,38 @@ async function addCustomerApi(name, phone = null, confirm = false) {
     confirm,
   });
 
+  const amountPaise = (initialTxn && initialTxn.amount_paise) ? parseInt(initialTxn.amount_paise) : 0;
+  const direction = (initialTxn && initialTxn.direction) || "credit";
+  const recordedAt = (initialTxn && initialTxn.recorded_at) || new Date().toISOString();
+
+  // If debit (udhaar given), positive balance (shop to collect). If credit (jama / payment), negative balance.
+  let initBalance = 0;
+  if (amountPaise > 0) {
+    initBalance = direction === "debit" ? amountPaise : -amountPaise;
+  }
+
   if (res.ok && res.data && res.data.customer) {
     // Backend returned 201 with customer
-    const cust = res.data.customer;
+    const cust = {
+      ...res.data.customer,
+      balance_paise: initBalance,
+      last_activity_at: recordedAt,
+    };
     let list = getLocalStoredCustomers() || [...DEFAULT_SEED_CUSTOMERS];
     list.unshift(cust);
     saveLocalStoredCustomers(list);
+
+    if (amountPaise > 0) {
+      saveLocalTransaction({
+        id: Date.now(),
+        customer_id: cust.id,
+        customer_name: cust.name,
+        amount_paise: amountPaise,
+        direction,
+        recorded_at: recordedAt,
+        source: "manual",
+      });
+    }
     return res;
   }
 
@@ -424,8 +485,8 @@ async function addCustomerApi(name, phone = null, confirm = false) {
     name: name.trim(),
     phone: phone && phone.trim() ? phone.trim() : null,
     area: null,
-    balance_paise: 0,
-    last_activity_at: new Date().toISOString(),
+    balance_paise: initBalance,
+    last_activity_at: recordedAt,
   };
 
   let list = getLocalStoredCustomers();
@@ -434,6 +495,18 @@ async function addCustomerApi(name, phone = null, confirm = false) {
   }
   list.unshift(newCustomer);
   saveLocalStoredCustomers(list);
+
+  if (amountPaise > 0) {
+    saveLocalTransaction({
+      id: Date.now(),
+      customer_id: newCustomer.id,
+      customer_name: newCustomer.name,
+      amount_paise: amountPaise,
+      direction,
+      recorded_at: recordedAt,
+      source: "manual",
+    });
+  }
 
   return {
     ok: true,
