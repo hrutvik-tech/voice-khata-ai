@@ -1,42 +1,25 @@
 /**
  * history.js — Transaction history with date filters, customer filter, and pagination.
+ * Single-language display (defaults to English, switches cleanly to Hindi).
  */
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let currentFilters = {};   // { date_from, date_to, customer_id }
+let currentFilters = {};
 let currentPage = 0;
 const PAGE_SIZE = 20;
 let allLoaded = false;
 let isLoading = false;
+let loadedTransactions = [];
 
 // ─── On Page Load ─────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   if (!checkAuth()) return;
-
-  // Shop name in header
-  const shop = typeof getShop === "function" ? getShop() : null;
-  const shopEl = document.getElementById("shop-name");
-  if (shopEl && shop) shopEl.textContent = shop.shop_name || "My Store";
-
-  // Language toggle
-  const langBtn = document.getElementById("lang-toggle");
-  if (langBtn) {
-    const currentLang = typeof getLang === "function" ? getLang() : "en";
-    langBtn.textContent = currentLang === "en" ? "हिं" : "EN";
-    langBtn.addEventListener("click", () => {
-      const lang = typeof getLang === "function" ? getLang() : "en";
-      const next = lang === "en" ? "hi" : "en";
-      if (typeof setLang === "function") setLang(next);
-      langBtn.textContent = next === "en" ? "हिं" : "EN";
-    });
-  }
 
   // Date quick-filter buttons
   document.querySelectorAll(".date-filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".date-filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      // Clear custom date input
       const customDate = document.getElementById("custom-date");
       if (customDate) customDate.value = "";
       setDateFilter(btn.getAttribute("data-range"));
@@ -49,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     customDate.addEventListener("change", () => {
       if (!customDate.value) return;
       document.querySelectorAll(".date-filter-btn").forEach((b) => b.classList.remove("active"));
-      const d = customDate.value; // "YYYY-MM-DD"
+      const d = customDate.value;
       currentFilters = { date_from: d, date_to: d };
       currentPage = 0;
       allLoaded = false;
@@ -66,7 +49,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       allLoaded = false;
       fetchAndRenderHistory(true);
     });
-    // Populate dropdown
     await populateCustomerDropdown(customerFilter);
   }
 
@@ -76,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadMoreBtn.addEventListener("click", loadMore);
   }
 
-  // Check for ?customer=ID URL param (deep-link from customers page)
+  // Check for ?customer=ID URL param
   const urlParams = new URLSearchParams(window.location.search);
   const presetCustomerId = urlParams.get("customer");
   if (presetCustomerId) {
@@ -84,16 +66,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (customerFilter) customerFilter.value = presetCustomerId;
   }
 
+  // Listen for language changes and re-render transaction items
+  window.addEventListener("languageChanged", () => {
+    renderHistoryItems();
+  });
+
   // Default: show today
   setDateFilter("today");
   initNavbar("history");
 });
 
 // ─── Date Filter ─────────────────────────────────────────────────────────────
-/**
- * Set date range filter from a named range string.
- * @param {"today"|"yesterday"|"week"|"month"} range
- */
 function setDateFilter(range) {
   const now = new Date();
   const yyyy = (d) => d.toISOString().slice(0, 10);
@@ -126,10 +109,6 @@ function setDateFilter(range) {
 }
 
 // ─── Fetch & Render ───────────────────────────────────────────────────────────
-/**
- * Fetch transactions from API and render them.
- * @param {boolean} [replace=false] - If true, clears list first; otherwise appends.
- */
 async function fetchAndRenderHistory(replace = false) {
   if (isLoading) return;
   isLoading = true;
@@ -139,9 +118,9 @@ async function fetchAndRenderHistory(replace = false) {
 
   if (replace && container) {
     container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; color:#9e9e9e;">
-        <div class="spinner" style="margin:0 auto 12px;"></div>
-        <div>Loading transactions…</div>
+      <div style="text-align: center; padding: 40px 20px; color: #9e9e9e;">
+        <div class="spinner" style="margin: 0 auto 12px;"></div>
+        <div>${t("loadingTransactions", "Loading transactions...")}</div>
       </div>`;
   }
 
@@ -157,7 +136,7 @@ async function fetchAndRenderHistory(replace = false) {
 
   if (!res.ok) {
     if (replace && container) {
-      container.innerHTML = `<div style="text-align:center;padding:32px;color:#c62828;">${res.error || "Failed to load"}</div>`;
+      container.innerHTML = `<div style="text-align: center; padding: 32px; color: #c62828;">${res.error || "Failed to load"}</div>`;
     }
     showToast(res.error || "Failed to load transactions", "error");
     return;
@@ -165,27 +144,13 @@ async function fetchAndRenderHistory(replace = false) {
 
   const txns = Array.isArray(res.data) ? res.data : [];
 
-  if (replace && container) container.innerHTML = "";
-
-  if (txns.length === 0 && currentPage === 0) {
-    if (container) {
-      container.innerHTML = `
-        <div style="text-align:center; padding:40px 20px; color:#9e9e9e;">
-          <div style="font-size:48px; margin-bottom:12px;">📋</div>
-          <div style="font-size:17px; font-weight:600; margin-bottom:4px;">कोई लेन-देन नहीं</div>
-          <div style="font-size:14px;">No transactions found</div>
-          <div style="font-size:13px; margin-top:8px;">Try a different date or customer filter</div>
-        </div>`;
-    }
-    return;
+  if (replace) {
+    loadedTransactions = txns;
+  } else {
+    loadedTransactions = loadedTransactions.concat(txns);
   }
 
-  if (container) {
-    txns.forEach((txn) => {
-      const el = formatTransaction(txn);
-      container.appendChild(el);
-    });
-  }
+  renderHistoryItems();
 
   if (txns.length < PAGE_SIZE) {
     allLoaded = true;
@@ -196,9 +161,31 @@ async function fetchAndRenderHistory(replace = false) {
   }
 }
 
-/**
- * Load next page of transactions (append to list).
- */
+function renderHistoryItems() {
+  const container = document.getElementById("history-list");
+  if (!container) return;
+
+  if (loadedTransactions.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: #9e9e9e;">
+        <div style="font-size: 48px; margin-bottom: 12px;">📋</div>
+        <div style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">
+          ${t("noHistoryFound", "No transactions found")}
+        </div>
+        <div style="font-size: 13px; margin-top: 6px;">
+          ${t("noHistorySub", "Try a different date or customer filter")}
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  loadedTransactions.forEach((txn) => {
+    const el = formatTransaction(txn);
+    container.appendChild(el);
+  });
+}
+
 function loadMore() {
   if (allLoaded || isLoading) return;
   currentPage++;
@@ -206,11 +193,6 @@ function loadMore() {
 }
 
 // ─── Transaction Item ─────────────────────────────────────────────────────────
-/**
- * Build a single transaction item DOM element.
- * @param {object} txn - Transaction object
- * @returns {HTMLElement}
- */
 function formatTransaction(txn) {
   const isCredit = txn.direction === "credit";
   const amount = formatPaise(Math.abs(txn.amount_paise || 0));
@@ -222,8 +204,15 @@ function formatTransaction(txn) {
     .join("")
     .toUpperCase();
   const timeStr = txn.recorded_at ? formatDateTime(txn.recorded_at) : "";
-  const sourceTag = txn.source === "voice" ? "🎤 Voice" : "✍️ Manual";
-  const sourceHindi = txn.source === "voice" ? "आवाज़" : "हाथ से";
+
+  // Single language labels
+  const sourceLabel = txn.source === "voice"
+    ? (currentLanguage() === "hi" ? "🎤 आवाज़" : "🎤 Voice")
+    : (currentLanguage() === "hi" ? "✍️ हाथ से" : "✍️ Manual");
+
+  const dirLabel = isCredit
+    ? t("creditPrefix", "↓ Credit")
+    : t("debitPrefix", "↑ Debit");
 
   const item = document.createElement("div");
   item.className = "txn-item";
@@ -235,25 +224,21 @@ function formatTransaction(txn) {
         <div class="txn-name">${escapeHtml(name)}</div>
         <div class="txn-time">
           ${timeStr}
-          <span style="display:inline-block; margin-left:6px; padding:1px 6px; background:#f5f5f5; border-radius:10px; font-size:11px;">
-            ${sourceTag} / ${sourceHindi}
+          <span style="display: inline-block; margin-left: 6px; padding: 1px 6px; background: #f5f5f5; border-radius: 10px; font-size: 11px;">
+            ${sourceLabel}
           </span>
         </div>
       </div>
     </div>
     <div class="txn-amount ${isCredit ? "credit" : "debit"}">
-      <span style="font-size:14px;">${isCredit ? "↓ जमा" : "↑ उधार"}</span><br>
-      <span style="font-size:16px; font-weight:800;">${isCredit ? "+" : "-"}${amount}</span>
+      <span style="font-size: 13px; font-weight: 600;">${dirLabel}</span><br>
+      <span style="font-size: 16px; font-weight: 800;">${isCredit ? "+" : "-"}${amount}</span>
     </div>`;
 
   return item;
 }
 
 // ─── Customer Dropdown ────────────────────────────────────────────────────────
-/**
- * Populate the customer filter dropdown with all customers.
- * @param {HTMLSelectElement} selectEl
- */
 async function populateCustomerDropdown(selectEl) {
   const res = await getCustomers("");
   if (!res.ok || !Array.isArray(res.data)) return;
@@ -267,11 +252,6 @@ async function populateCustomerDropdown(selectEl) {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-/**
- * Format ISO timestamp to "21 Nov 2026 • 10:30 AM"
- * @param {string} isoDate
- * @returns {string}
- */
 function formatDateTime(isoDate) {
   if (!isoDate) return "";
   try {
@@ -293,11 +273,6 @@ function formatDateTime(isoDate) {
   }
 }
 
-/**
- * Escape HTML special characters.
- * @param {string} str
- * @returns {string}
- */
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
