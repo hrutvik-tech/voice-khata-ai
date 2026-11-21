@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E7D32">
+  <title>Voice Ledger — Bolta Khata</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;">
+      <div>
+        <h1 style="font-size: 19px; color: var(--primary); margin: 0;" data-i18n="voiceScreenTitle">Voice Input</h1>
+        <div class="page-subtitle" data-i18n="voiceScreenSubtitle">Speak in Hindi or English</div>
+      </div>
+      
+      <!-- Top Right Controls: Language & Logout -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 4px 12px; font-size: 13px; font-weight: 700; height: 32px; border-radius: 16px; border-color: var(--primary); color: var(--primary); background: #F1F8E9;">
+          🌐 हिंदी
+        </button>
+        <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 32px;" title="Logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Offline Indicator Banner -->
+    <div id="offline-indicator-banner" class="offline-banner hidden">
+      ⚠️ Offline Mode
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="page-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65vh; text-align: center;">
+      
+      <!-- Center 80px+ Round Microphone Button -->
+      <div style="margin: 20px 0 16px 0; position: relative;">
+        <button id="btn-voice-mic" class="mic-btn-large" aria-label="Tap to Speak">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- State Status Display -->
+      <h2 id="voice-status-text" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">
+        🎤 Tap to speak
+      </h2>
+      <p id="voice-prompt-text" style="font-size: 13px; color: var(--text-muted); max-width: 290px; margin-bottom: 20px;">
+        e.g. "Ramesh gave 500 rupees" or "Suresh 300 credit"
+      </p>
+
+      <!-- Confirmation Screen Box (State: CONFIRMING) -->
+      <div id="voice-confirm-box" class="confirm-box hidden" style="width: 100%; max-width: 360px;">
+        <div style="font-size: 15px; font-weight: 800; margin-bottom: 10px; color: var(--primary);" id="lbl-confirm-title" data-i18n="confirmEntryTitle">
+          Confirm Entry:
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label" data-i18n="customerLabel">Customer:</span>
+          <span class="confirm-val" id="conf-customer">Ramesh Kumar</span>
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label" data-i18n="amountLabel">Amount:</span>
+          <span class="confirm-val" id="conf-amount" style="font-size: 20px; color: var(--primary);">₹500</span>
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label" data-i18n="typeLabel">Type:</span>
+          <span class="status-pill credit" id="conf-type">Collection</span>
+        </div>
+
+        <!-- Confirm and Change Actions -->
+        <div class="confirm-actions">
+          <button id="btn-conf-change" class="btn btn-outline" style="flex: 1; padding: 12px 10px; font-size: 15px;" data-i18n="btnChange">
+            ✗ Change
+          </button>
+          <button id="btn-conf-ok" class="btn btn-primary" style="flex: 1; padding: 12px 10px; font-size: 15px;" data-i18n="btnConfirm">
+            ✓ Confirm
+          </button>
+        </div>
+      </div>
+
+      <!-- Success Box (State: SUCCESS) -->
+      <div id="voice-success-box" class="card hidden" style="width: 100%; max-width: 340px; background: #E8F5E9; border-color: #C8E6C9; padding: 20px; margin-top: 16px;">
+        <div style="font-size: 40px; color: var(--primary); margin-bottom: 6px;">✓</div>
+        <div id="success-msg" style="font-size: 18px; font-weight: 700; color: var(--primary-dark);">
+          ✓ Entry recorded
+        </div>
+      </div>
+
+      <!-- Error Box (State: ERROR) -->
+      <div id="voice-error-box" class="card hidden" style="width: 100%; max-width: 340px; background: #FFEBEE; border-color: #FFCDD2; padding: 20px; margin-top: 16px;">
+        <div style="font-size: 32px; color: var(--danger); margin-bottom: 6px;">⚠️</div>
+        <div id="voice-error-msg" style="font-size: 15px; font-weight: 600; color: var(--danger); margin-bottom: 14px;">
+          Could not understand. Please try again.
+        </div>
+        <button id="btn-retry" class="btn btn-primary" style="padding: 10px 16px; font-size: 15px;" data-i18n="btnRetry">
+          Retry
+        </button>
+      </div>
+
+      <!-- Manual Change Options Modal/Drawer -->
+      <div id="change-options-modal" class="modal-overlay">
+        <div class="modal-card">
+          <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 14px;" data-i18n="editEntryTitle">Edit Entry</h3>
+          
+          <div class="form-group">
+            <label class="form-label" data-i18n="changeDirectionLabel">Change Type:</label>
+            <div style="display: flex; gap: 10px;">
+              <button id="btn-switch-credit" type="button" class="btn btn-outline" style="flex: 1; font-size: 14px;" data-i18n="collection">
+                Collection
+              </button>
+              <button id="btn-switch-debit" type="button" class="btn btn-outline" style="flex: 1; font-size: 14px;" data-i18n="creditGiven">
+                Credit Given
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="btn-re-record" class="btn btn-outline" style="flex: 1; font-size: 14px;" data-i18n="btnSpeakAgain">
+              🎙️ Speak Again
+            </button>
+            <button id="btn-save-edit" class="btn btn-primary" style="flex: 1; font-size: 14px;" data-i18n="saveBtn">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="navbar">
+      <a href="dashboard.html" class="nav-item" data-tab="home">
+        <span class="nav-icon" style="font-size: 20px;">🏠</span>
+        <span class="nav-label" data-i18n="navHome">Home</span>
+      </a>
+
+      <a href="customers.html" class="nav-item" data-tab="customers">
+        <span class="nav-icon" style="font-size: 20px;">👥</span>
+        <span class="nav-label" data-i18n="navCustomers">Customers</span>
+      </a>
+
+      <!-- Center Big Mic Button Active -->
+      <a href="voice.html" class="nav-mic-btn active" data-tab="voice" aria-label="Voice Ledger" style="background: var(--accent);">
+        <span class="nav-icon" style="font-size: 26px;">🎤</span>
+      </a>
+
+      <a href="history.html" class="nav-item" data-tab="history">
+        <span class="nav-icon" style="font-size: 20px;">📒</span>
+        <span class="nav-label" data-i18n="navHistory">History</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/offline.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/voice.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!checkAuth()) return;
+      initNavbar("voice");
+      updateOfflineBanner();
+
+      const btnMic = document.getElementById("btn-voice-mic");
+      const btnConfOk = document.getElementById("btn-conf-ok");
+      const btnConfChange = document.getElementById("btn-conf-change");
+      const btnRetry = document.getElementById("btn-retry");
+      const changeModal = document.getElementById("change-options-modal");
+      const btnReRecord = document.getElementById("btn-re-record");
+      const btnSaveEdit = document.getElementById("btn-save-edit");
+      const btnSwitchCredit = document.getElementById("btn-switch-credit");
+      const btnSwitchDebit = document.getElementById("btn-switch-debit");
+
+      // Mic tap handling
+      btnMic.addEventListener("click", async () => {
+        if (currentVoiceState === VOICE_STATES.IDLE || currentVoiceState === VOICE_STATES.ERROR || currentVoiceState === VOICE_STATES.SUCCESS) {
+          const permitted = await initMic();
+          if (permitted) {
+            await startRecording();
+          }
+        } else if (currentVoiceState === VOICE_STATES.LISTENING) {
+          stopRecording();
+        }
+      });
+
+      // Confirm button
+      btnConfOk.addEventListener("click", async () => {
+        await confirmEntry();
+      });
+
+      // Change button -> open edit options
+      btnConfChange.addEventListener("click", () => {
+        changeModal.classList.add("open");
+      });
+
+      // Edit modal options
+      btnSwitchCredit.addEventListener("click", () => {
+        if (lastInterpretedData) {
+          lastInterpretedData.direction = "credit";
+          document.getElementById("conf-type").textContent = t("collection", "Collection");
+          document.getElementById("conf-type").className = "status-pill credit";
+        }
+        changeModal.classList.remove("open");
+      });
+
+      btnSwitchDebit.addEventListener("click", () => {
+        if (lastInterpretedData) {
+          lastInterpretedData.direction = "debit";
+          document.getElementById("conf-type").textContent = t("creditGiven", "Credit Given");
+          document.getElementById("conf-type").className = "status-pill debit";
+        }
+        changeModal.classList.remove("open");
+      });
+
+      btnReRecord.addEventListener("click", () => {
+        changeModal.classList.remove("open");
+        setVoiceState(VOICE_STATES.IDLE);
+      });
+
+      btnSaveEdit.addEventListener("click", () => {
+        changeModal.classList.remove("open");
+      });
+
+      // Retry button
+      btnRetry.addEventListener("click", () => {
+        setVoiceState(VOICE_STATES.IDLE);
+      });
+
+      // Logout button
+      const btnLogout = document.getElementById("btn-logout");
+      if (btnLogout) {
+        btnLogout.addEventListener("click", () => {
+          clearAuth();
+          window.location.href = "index.html";
+        });
+      }
+
+      // Re-apply state text when language toggled
+      window.addEventListener("languageChanged", () => {
+        setVoiceState(currentVoiceState, lastInterpretedData);
+        updateOfflineBanner();
+      });
+    });
+  </script>
+</body>
+</html>

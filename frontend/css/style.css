@@ -1,0 +1,887 @@
+/* ==========================================================================
+   Bolta Khata (बोलता खाता) — Shared Mobile-First Styles
+   Designed for Indian Kirana Shopkeepers: High contrast, large touch targets,
+   bilingual readability.
+   ========================================================================== */
+
+:root {
+  --primary: #2E7D32;       /* Kirana Green (Money & Trust) */
+  --primary-dark: #1B5E20;
+  --primary-light: #E8F5E9;
+  --accent: #FF9800;        /* Warning / Action Orange */
+  --accent-dark: #F57C00;
+  --credit: #2E7D32;        /* Udhaar / Balance */
+  --payment: #1565C0;       /* Jama / Received (Blue) */
+  --danger: #D32F2F;        /* Error / Delete */
+  
+  --bg: #F4F6F8;
+  --surface: #FFFFFF;
+  --text-main: #1F2937;
+  --text-muted: #6B7280;
+  --border: #E5E7EB;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Devanagari", "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: #ECEFF1;
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Max-width 480px centered mobile layout */
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  padding-bottom: 76px; /* Space for bottom navbar */
+}
+
+/* Container for pages without navbar (e.g., Auth) */
+.app-container.no-nav {
+  padding-bottom: 24px;
+}
+
+/* Page Header */
+.page-header {
+  background: var(--surface);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.page-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Content Area */
+.page-content {
+  padding: 16px;
+  flex: 1;
+}
+
+/* Card Component */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+
+/* Form & Input Fields */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.form-label .sub {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #FAFAFA;
+  color: var(--text-main);
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.1s;
+  gap: 8px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--primary-dark);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: #FFFFFF;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-main);
+}
+
+/* Toggle Tabs (Login / Register) */
+.tab-toggle {
+  display: flex;
+  background: #E5E7EB;
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Language Switcher (Top Right) */
+.top-bar-lang {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0 16px;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  background: #E5E7EB;
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+}
+
+.lang-option {
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-option.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* Bottom Navigation Bar (Mobile First) */
+.navbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 68px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  padding: 0 8px;
+}
+
+.nav-item {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  gap: 3px;
+  transition: color 0.2s;
+}
+
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Center Big Mic Button */
+.nav-mic-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -24px;
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.45);
+  text-decoration: none;
+  transition: transform 0.15s, background-color 0.2s;
+  border: 3px solid var(--surface);
+  position: relative;
+}
+
+/* Voice Badge for Offline Queue Count */
+.voice-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #D32F2F;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.nav-mic-btn:active {
+  transform: scale(0.93);
+  background: var(--primary-dark);
+}
+
+.nav-mic-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: auto;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success {
+  background-color: var(--primary);
+}
+
+.toast-error {
+  background-color: var(--danger);
+}
+
+.toast-info {
+  background-color: var(--payment);
+}
+
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Helper Utilities */
+.text-center { text-align: center; }
+.mt-4 { margin-top: 16px; }
+.mb-4 { margin-bottom: 16px; }
+.hidden { display: none !important; }
+
+/* Dashboard Summary Cards Grid (Bigger & Attractive 2-column layout) */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card.card-collection {
+  background: #F4FBF4;
+  border-color: #C8E6C9;
+}
+
+.summary-card.card-pending {
+  background: #FFFDF5;
+  border-color: #FFE082;
+}
+
+.summary-card .label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.3;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card .value {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.value-debit { color: var(--danger); }
+.value-credit { color: var(--primary); }
+.value-pending { color: #E65100; }
+
+/* Transaction List Items */
+.txn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.txn-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  min-height: 54px;
+}
+
+.txn-item:active {
+  background: #F3F4F6;
+  transform: scale(0.99);
+}
+
+.txn-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.txn-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E0E7FF;
+  color: #3730A3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.txn-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.txn-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.txn-amount {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.txn-amount.credit {
+  color: var(--primary);
+}
+
+.txn-amount.debit {
+  color: var(--danger);
+}
+
+/* Modal for Transaction Detail */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  max-width: 400px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.95);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.open .modal-card {
+  transform: scale(1);
+}
+
+/* Offline Banner */
+.offline-banner {
+  background: #FFF3E0;
+  color: #E65100;
+  border-bottom: 1px solid #FFE0B2;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Voice Screen Elements */
+.voice-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  text-align: center;
+}
+
+.mic-btn-large {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 4px solid #FFFFFF;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.45);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  position: relative;
+}
+
+.mic-btn-large:active {
+  transform: scale(0.95);
+}
+
+.mic-btn-large svg {
+  width: 42px;
+  height: 42px;
+}
+
+/* Mic State: Listening (Pulse Red) */
+.mic-btn-large.listening {
+  background: var(--danger);
+  box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7);
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 24px rgba(211, 47, 47, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(211, 47, 47, 0);
+  }
+}
+
+/* Mic State: Processing */
+.mic-btn-large.processing {
+  background: var(--accent);
+  box-shadow: 0 8px 24px rgba(255, 152, 0, 0.4);
+}
+
+/* Confirmation Box */
+.confirm-box {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--primary);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  margin-top: 20px;
+  text-align: left;
+}
+
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.confirm-row:last-of-type {
+  border-bottom: none;
+}
+
+.confirm-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.confirm-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* Status Pill */
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill.credit {
+  background: #E8F5E9;
+  color: var(--primary);
+}
+
+.status-pill.debit {
+  background: #FFEBEE;
+  color: var(--danger);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Connection State Banner (bk-conn-banner)
+   Shown below the page-header on Home and Customers pages.
+   ═══════════════════════════════════════════════════════════════════════ */
+.bk-conn-banner {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  position: sticky;
+  top: 0;          /* sits just below the sticky page-header */
+  z-index: 49;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.bk-conn-banner--offline {
+  background: #FFF8E1;
+  color: #E65100;
+  border-bottom: 1px solid #FFCC80;
+}
+
+.bk-conn-banner--reconnecting {
+  background: #E3F2FD;
+  color: #1565C0;
+  border-bottom: 1px solid #90CAF9;
+}
+
+.bk-conn-banner--syncing {
+  background: #F3E5F5;
+  color: #6A1B9A;
+  border-bottom: 1px solid #CE93D8;
+}
+
+.bk-conn-banner--synced {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border-bottom: 1px solid #A5D6A7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Not-Saved Entry Cards (shown on Home dashboard)
+   ═══════════════════════════════════════════════════════════════════════ */
+#not-saved-container {
+  padding: 0 16px 0;
+}
+
+.not-saved-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  background: #FFF3E0;
+  border: 1.5px solid #FFB74D;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.not-saved-msg {
+  font-size: 13px;
+  color: #E65100;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.not-saved-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #BF360C;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.75;
+}
+.not-saved-close:hover { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Error Toast — unified component (uses existing .toast classes in app.js)
+   Extra REST-error emphasis:
+   ═══════════════════════════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 88px;        /* above bottom navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+  width: 100%;
+  max-width: 448px;
+  padding: 0 16px;
+}
+
+.toast {
+  background: #323232;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: auto;
+  max-width: 100%;
+  word-break: break-word;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success { background: #2E7D32; }
+.toast-error   { background: #C62828; }
+.toast-info    { background: #1565C0; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Font rules: English, Hindi (Devanagari), Kannada
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Devanagari (Hindi) text */
+[lang="hi"], :lang(hi),
+.hi-text {
+  font-family: "Noto Sans Devanagari", "Mangal", "Aparajita", sans-serif;
+}
+
+/* Kannada script */
+.kn-text,
+[lang="kn"] {
+  font-family: "Noto Sans Kannada", "Tunga", sans-serif;
+}
+
+/* Heard strip (voice transcript text) */
+.heard-strip {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari",
+               "Noto Sans Kannada", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  padding: 8px 12px;
+  background: #F8F9FA;
+  border-radius: var(--radius-sm);
+  margin: 8px 0;
+  word-break: break-word;
+}
+
+/* Customer name, badge — allow Devanagari & Kannada glyphs to render */
+.txn-name,
+.txn-avatar,
+.customer-name-cell,
+.status-pill {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari",
+               "Noto Sans Kannada", Roboto, Arial, sans-serif;
+}

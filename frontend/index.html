@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E7D32">
+  <title>Bolta Khata — Login</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container no-nav">
+    
+    <!-- Top Right Language Switcher -->
+    <div class="top-bar-lang">
+      <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 6px 14px; font-size: 13px; font-weight: 700; height: 34px; border-radius: 18px; border-color: var(--primary); color: var(--primary); background: #F1F8E9;">
+        🌐 हिंदी
+      </button>
+    </div>
+
+    <div class="page-content" style="padding-top: 10px;">
+      
+      <!-- App Header / Logo -->
+      <div class="text-center mb-4">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; background: var(--primary-light); color: var(--primary); margin-bottom: 12px; box-shadow: var(--shadow-sm);">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </div>
+        <h1 id="i18n-app-title" data-i18n="appTitle" style="font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">Bolta Khata</h1>
+        <p id="i18n-app-sub" data-i18n="appSub" style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Voice Digital Ledger</p>
+        <p id="i18n-tagline" data-i18n="tagline" class="page-subtitle" style="margin-top: 4px;">Voice-first digital ledger for Kirana shops</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="card" style="box-shadow: var(--shadow-md);">
+        
+        <!-- Toggle Tabs -->
+        <div class="tab-toggle">
+          <button id="tab-login" type="button" class="tab-btn active" data-i18n="loginTab">Log In</button>
+          <button id="tab-register" type="button" class="tab-btn" data-i18n="registerTab">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login">
+          <div class="form-group">
+            <label id="lbl-login-phone" class="form-label" for="login-phone" data-i18n="phoneLabel">
+              Mobile Number
+            </label>
+            <input 
+              id="login-phone" 
+              class="input-field" 
+              type="tel" 
+              inputmode="numeric" 
+              data-i18n-placeholder="phonePlaceholder"
+              placeholder="10-digit mobile number" 
+              maxlength="15" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-login-password" class="form-label" for="login-password" data-i18n="pinLabel">
+              PIN or Password
+            </label>
+            <input 
+              id="login-password" 
+              class="input-field" 
+              type="password" 
+              inputmode="numeric" 
+              data-i18n-placeholder="pinPlaceholder"
+              placeholder="4 or 6-digit PIN" 
+              required
+            >
+          </div>
+
+          <button id="btn-login-submit" type="submit" class="btn btn-primary" style="margin-top: 10px;" data-i18n="loginBtn">
+            Log In
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" class="hidden">
+          <div class="form-group">
+            <label id="lbl-reg-shop-name" class="form-label" for="reg-shop-name" data-i18n="shopNameLabel">
+              Shop Name
+            </label>
+            <input 
+              id="reg-shop-name" 
+              class="input-field" 
+              type="text" 
+              data-i18n-placeholder="shopNamePlaceholder"
+              placeholder="e.g. Gupta General Store" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-reg-owner-name" class="form-label" for="reg-owner-name" data-i18n="ownerNameLabel">
+              Owner Name
+            </label>
+            <input 
+              id="reg-owner-name" 
+              class="input-field" 
+              type="text" 
+              data-i18n-placeholder="ownerNamePlaceholder"
+              placeholder="e.g. Ramesh Kumar" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-reg-phone" class="form-label" for="reg-phone" data-i18n="phoneLabel">
+              Mobile Number
+            </label>
+            <input 
+              id="reg-phone" 
+              class="input-field" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[6-9][0-9]{9}" 
+              data-i18n-placeholder="phonePlaceholder"
+              placeholder="10-digit mobile number" 
+              maxlength="10" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-reg-password" class="form-label" for="reg-password" data-i18n="regPinLabel">
+              Set PIN
+            </label>
+            <input 
+              id="reg-password" 
+              class="input-field" 
+              type="password" 
+              inputmode="numeric" 
+              data-i18n-placeholder="regPinPlaceholder"
+              placeholder="4-digit secret PIN" 
+              minlength="4" 
+              required
+            >
+          </div>
+
+          <button id="btn-register-submit" type="submit" class="btn btn-primary" style="margin-top: 10px;" data-i18n="registerBtn">
+            Create Account
+          </button>
+        </form>
+
+      </div>
+
+      <div class="text-center" style="margin-top: 24px;">
+        <p id="i18n-footer" data-i18n="footerText" style="font-size: 13px; color: var(--text-muted);">
+          Secure & simple digital voice ledger for Indian retail
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/offline.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
