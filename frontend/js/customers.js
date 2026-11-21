@@ -1,32 +1,15 @@
 /**
  * customers.js — Customer list, search, add, and history navigation for Bolta Khata.
+ * Ensures single-language display (English by default, switches cleanly to Hindi).
  */
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let allCustomers = [];   // full list fetched from API
-let isAddingCustomer = false; // prevent double-submit
+let allCustomers = [];
+let isAddingCustomer = false;
 
 // ─── On Page Load ─────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   if (!checkAuth()) return;
-
-  // Load shop name in header
-  const shop = typeof getShop === "function" ? getShop() : null;
-  const shopEl = document.getElementById("shop-name");
-  if (shopEl && shop) shopEl.textContent = shop.shop_name || "My Store";
-
-  // Language toggle
-  const langBtn = document.getElementById("lang-toggle");
-  if (langBtn) {
-    const currentLang = typeof getLang === "function" ? getLang() : "en";
-    langBtn.textContent = currentLang === "en" ? "हिं" : "EN";
-    langBtn.addEventListener("click", () => {
-      const lang = typeof getLang === "function" ? getLang() : "en";
-      const next = lang === "en" ? "hi" : "en";
-      if (typeof setLang === "function") setLang(next);
-      langBtn.textContent = next === "en" ? "हिं" : "EN";
-    });
-  }
 
   // Search input live filtering
   const searchInput = document.getElementById("search-input");
@@ -54,16 +37,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveBtn = document.getElementById("btn-save-customer");
   if (saveBtn) saveBtn.addEventListener("click", handleAddCustomer);
 
+  // Listen for language changes and re-render list
+  window.addEventListener("languageChanged", () => {
+    if (allCustomers.length > 0) {
+      const query = (document.getElementById("search-input")?.value || "").trim();
+      searchCustomers(query);
+    }
+  });
+
   // Load customer list
   loadCustomers();
   initNavbar("customers");
 });
 
 // ─── Load Customers ───────────────────────────────────────────────────────────
-/**
- * Fetch all customers from API and render them.
- * Falls back to demo data if backend is offline.
- */
 async function loadCustomers() {
   showListLoading(true);
   const res = await getCustomers("");
@@ -80,10 +67,6 @@ async function loadCustomers() {
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────
-/**
- * Filter the already-loaded customer list locally by name/phone.
- * @param {string} query
- */
 function searchCustomers(query) {
   if (!query || !query.trim()) {
     renderCustomers(allCustomers);
@@ -99,21 +82,33 @@ function searchCustomers(query) {
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
-/**
- * Build and display customer cards.
- * @param {Array} list - Array of customer objects
- */
 function renderCustomers(list) {
   const container = document.getElementById("customer-list");
+  const countEl = document.getElementById("customer-count");
   if (!container) return;
+
+  if (countEl) {
+    if (list && list.length > 0) {
+      const isSingle = list.length === 1;
+      const label = isSingle
+        ? t("customerCountSingle", "1 customer")
+        : `${list.length} ${t("customerCountPlural", "customers")}`;
+      countEl.textContent = label;
+    } else {
+      countEl.textContent = "";
+    }
+  }
 
   if (!list || list.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; color:#9e9e9e;">
-        <div style="font-size:48px; margin-bottom:12px;">👤</div>
-        <div style="font-size:17px; font-weight:600; margin-bottom:4px;">कोई ग्राहक नहीं</div>
-        <div style="font-size:14px;">No customers yet</div>
-        <div style="font-size:13px; margin-top:8px;">Add your first customer using the + button above</div>
+      <div style="text-align: center; padding: 40px 20px; color: #9e9e9e;">
+        <div style="font-size: 48px; margin-bottom: 12px;">👤</div>
+        <div style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">
+          ${t("noCustomersYet", "No customers yet")}
+        </div>
+        <div style="font-size: 13px; margin-top: 6px;">
+          ${t("noCustomersSub", "Add your first customer using the + button above")}
+        </div>
       </div>`;
     return;
   }
@@ -125,11 +120,6 @@ function renderCustomers(list) {
   });
 }
 
-/**
- * Build a single customer card DOM element.
- * @param {object} customer
- * @returns {HTMLElement}
- */
 function buildCustomerCard(customer) {
   const balance = customer.balance_paise || 0;
   const isCredit = balance >= 0;
@@ -142,9 +132,13 @@ function buildCustomerCard(customer) {
     .join("")
     .toUpperCase();
 
+  const lastPrefix = t("customerLast", "Last");
   const lastDate = customer.last_activity_at
-    ? formatDate(customer.last_activity_at)
-    : "No activity";
+    ? `${lastPrefix}: ${formatDate(customer.last_activity_at)}`
+    : "";
+
+  const balanceLabel = isCredit ? t("toCollect", "To collect") : t("toPay", "To pay");
+  const color = isCredit ? "#2E7D32" : "#c62828";
 
   const card = document.createElement("div");
   card.className = "txn-item";
@@ -158,15 +152,14 @@ function buildCustomerCard(customer) {
       <div class="txn-avatar">${initials}</div>
       <div>
         <div class="txn-name">${escapeHtml(customer.name || "Unknown")}</div>
-        <div class="txn-time">Last: ${lastDate}${customer.phone ? " • " + customer.phone : ""}</div>
+        <div class="txn-time">${lastDate}${customer.phone ? " • " + customer.phone : ""}</div>
       </div>
     </div>
-    <div style="text-align:right; min-width:90px;">
-      <div style="font-size:12px; font-weight:600; color:${isCredit ? "#2E7D32" : "#c62828"}; margin-bottom:2px;">
-        ${isCredit ? "वसूलना है" : "देना है"}<br>
-        <span style="font-size:11px; font-weight:400;">${isCredit ? "To collect" : "To pay"}</span>
+    <div style="text-align: right; min-width: 90px;">
+      <div style="font-size: 12px; font-weight: 600; color: ${color}; margin-bottom: 2px;">
+        ${balanceLabel}
       </div>
-      <div style="font-size:17px; font-weight:800; color:${isCredit ? "#2E7D32" : "#c62828"};">
+      <div style="font-size: 17px; font-weight: 800; color: ${color};">
         ${formatPaise(absBalance)}
       </div>
     </div>`;
@@ -180,10 +173,6 @@ function buildCustomerCard(customer) {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-/**
- * Navigate to history.html pre-filtered for a customer.
- * @param {number|string} customerId
- */
 function viewCustomerHistory(customerId) {
   window.location.href = `history.html?customer=${encodeURIComponent(customerId)}`;
 }
@@ -208,10 +197,6 @@ function closeAddModal() {
   setSaveBtnLoading(false);
 }
 
-/**
- * Handle add-customer form submission.
- * Deals with 409 "similar exists" confirmation flow.
- */
 async function handleAddCustomer() {
   if (isAddingCustomer) return;
 
@@ -223,7 +208,7 @@ async function handleAddCustomer() {
   const phone = phoneInput.value.trim();
 
   if (!name) {
-    showToast("Please enter customer name / नाम डालें", "error");
+    showToast(t("pleaseEnterName", "Please enter customer name"), "error");
     nameInput.focus();
     return;
   }
@@ -236,7 +221,6 @@ async function handleAddCustomer() {
 
   setSaveBtnLoading(false);
 
-  // 409 — similar customer exists, ask for confirmation
   if (!res.ok && res.status === 409 && res.data && res.data.similar_exists) {
     isAddingCustomer = false;
     const confirmRow = document.getElementById("similar-confirm-row");
@@ -245,16 +229,16 @@ async function handleAddCustomer() {
       document.getElementById("similar-name-text").textContent = existing;
       confirmRow.style.display = "block";
     }
-    showToast(`Similar customer found: ${res.data.similar_name || ""}`, "error");
+    showToast(`${t("similarFound", "Similar customer found:")} ${res.data.similar_name || ""}`, "error");
     return;
   }
 
   isAddingCustomer = false;
 
   if (res.ok) {
-    showToast("✓ Customer added / ग्राहक जोड़ा गया", "success");
+    showToast(t("customerAddedSuccess", "✓ Customer added successfully"), "success");
     closeAddModal();
-    loadCustomers(); // refresh list
+    loadCustomers();
   } else {
     showToast(res.error || "Failed to add customer", "error");
   }
@@ -265,7 +249,7 @@ function setSaveBtnLoading(loading) {
   const btn = document.getElementById("btn-save-customer");
   if (!btn) return;
   btn.disabled = loading;
-  btn.textContent = loading ? "Saving…" : "Save / सहेजें";
+  btn.textContent = loading ? t("savingBtn", "Saving...") : t("saveBtn", "Save");
 }
 
 function showListLoading(show) {
@@ -273,18 +257,13 @@ function showListLoading(show) {
   if (!container) return;
   if (show) {
     container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; color:#9e9e9e;">
-        <div class="spinner" style="margin:0 auto 12px;"></div>
-        <div>Loading customers…</div>
+      <div style="text-align: center; padding: 40px 20px; color: #9e9e9e;">
+        <div class="spinner" style="margin: 0 auto 12px;"></div>
+        <div>${t("loadingCustomers", "Loading customers...")}</div>
       </div>`;
   }
 }
 
-/**
- * Escape HTML special characters to prevent XSS.
- * @param {string} str
- * @returns {string}
- */
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")

@@ -1,27 +1,26 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Dashboard | Bolta Khata AI — बोलता खाता</title>
+  <title>Dashboard — Bolta Khata</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="app-container" id="dashboard-container">
     
     <!-- Top Header -->
-    <header class="page-header">
+    <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;">
       <div style="flex: 1;">
-        <h1 id="shop-title" style="font-size: 19px; color: var(--primary); margin-bottom: 2px;">Bolta Khata</h1>
+        <h1 id="shop-title" style="font-size: 19px; color: var(--primary); margin: 0 0 2px 0;">Bolta Khata</h1>
         <div id="today-date-text" class="page-subtitle">Loading date...</div>
       </div>
       
       <!-- Top Right Controls: Language & Logout -->
       <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="lang-switch" role="group" aria-label="Language Selector">
-          <button id="lang-btn-en" type="button" class="lang-option active" data-lang="en">EN</button>
-          <button id="lang-btn-hi" type="button" class="lang-option" data-lang="hi">HI</button>
-        </div>
+        <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 4px 12px; font-size: 13px; font-weight: 700; height: 32px; border-radius: 16px; border-color: var(--primary); color: var(--primary); background: #F1F8E9;">
+          🌐 हिंदी
+        </button>
         <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 32px;" title="Logout">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -38,26 +37,26 @@
       <!-- Pull to refresh hint -->
       <div id="refresh-indicator" style="text-align: center; font-size: 12px; color: var(--text-muted); height: 0; overflow: hidden; transition: height 0.2s;">
         <span class="spinner" style="display: inline-block; width: 14px; height: 14px; border-width: 2px; vertical-align: middle; margin-right: 4px; border-top-color: var(--primary); border-color: rgba(46,125,50,0.3);"></span>
-        <span id="txt-refreshing">Refreshing... / ताज़ा हो रहा है...</span>
+        <span id="txt-refreshing" data-i18n="refreshing">Refreshing...</span>
       </div>
 
       <!-- 3 Summary Cards at Top -->
       <div class="summary-grid">
         <!-- Sales (Debit) -->
         <div class="summary-card">
-          <div class="label" id="lbl-today-sales">Today's Sales<br><span style="font-size: 10px; font-weight: normal;">आज की बिक्री</span></div>
+          <div class="label" id="lbl-today-sales" data-i18n="todaySales">Today's Sales</div>
           <div class="value value-debit" id="val-today-sales">₹0</div>
         </div>
         
         <!-- Collection (Credit) -->
         <div class="summary-card">
-          <div class="label" id="lbl-today-collection">Today's Collection<br><span style="font-size: 10px; font-weight: normal;">आज की वसूली</span></div>
+          <div class="label" id="lbl-today-collection" data-i18n="todayCollection">Today's Collection</div>
           <div class="value value-credit" id="val-today-collection">₹0</div>
         </div>
 
         <!-- Total Pending -->
         <div class="summary-card">
-          <div class="label" id="lbl-total-pending">Total Pending<br><span style="font-size: 10px; font-weight: normal;">कुल बकाया</span></div>
+          <div class="label" id="lbl-total-pending" data-i18n="totalPending">Total Pending</div>
           <div class="value value-pending" id="val-total-pending">₹0</div>
         </div>
       </div>
@@ -65,8 +64,8 @@
       <!-- Quick Mic Action Banner -->
       <div class="card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; margin-bottom: 16px;">
         <div>
-          <div style="font-size: 15px; font-weight: 700;" id="txt-banner-title">Speak & Record / बोलकर लिखें</div>
-          <div style="font-size: 12px; opacity: 0.9;" id="txt-banner-sub">"Ramesh ne 500 diye"</div>
+          <div style="font-size: 15px; font-weight: 700;" id="txt-banner-title" data-i18n="bannerTitle">Speak & Record</div>
+          <div style="font-size: 12px; opacity: 0.9;" id="txt-banner-sub" data-i18n="bannerSub">e.g. "Ramesh gave 500"</div>
         </div>
         <a href="voice.html" style="background: #FFFFFF; color: var(--primary); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); text-decoration: none;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -79,10 +78,10 @@
 
       <!-- Recent Transactions Header -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main);" id="heading-recent-txns">
-          Recent Transactions / हाल के लेन-देन
+        <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0;" id="heading-recent-txns" data-i18n="recentTransactions">
+          Recent Transactions
         </h2>
-        <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;" id="btn-manual-refresh">
+        <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;" id="btn-manual-refresh" data-i18n="refresh">
           🔄 Refresh
         </span>
       </div>
@@ -91,7 +90,7 @@
       <div id="txn-list-container" class="txn-list">
         <div class="card text-center" style="padding: 30px 16px; color: var(--text-muted);">
           <span class="spinner" style="display: inline-block; width: 22px; height: 22px; border-top-color: var(--primary); border-color: rgba(46,125,50,0.3); margin-bottom: 8px;"></span>
-          <p id="txt-loading-txns">Loading transactions... / लेन-देन लोड हो रहे हैं...</p>
+          <p id="txt-loading-txns" data-i18n="loadingTransactions">Loading transactions...</p>
         </div>
       </div>
 
@@ -101,7 +100,7 @@
     <div id="txn-modal" class="modal-overlay">
       <div class="modal-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 18px; font-weight: 700;" id="modal-title">Transaction Details</h3>
+          <h3 style="font-size: 18px; font-weight: 700; margin: 0;" id="modal-title" data-i18n="txnDetails">Transaction Details</h3>
           <button id="modal-close" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
         </div>
 
@@ -111,22 +110,22 @@
           </div>
           <div id="modal-customer" style="font-size: 18px; font-weight: 700;">Ramesh Kumar</div>
           <div id="modal-amount" style="font-size: 26px; font-weight: 800; margin-top: 6px;">₹500</div>
-          <div id="modal-badge" class="status-pill credit" style="margin-top: 4px;">Collection / जमा</div>
+          <div id="modal-badge" class="status-pill credit" style="margin-top: 4px;">Collection</div>
         </div>
 
         <div style="border-top: 1px solid var(--border); padding-top: 14px; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
           <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Date & Time:</span>
+            <span style="color: var(--text-muted);" data-i18n="dateTime">Date & Time:</span>
             <span id="modal-time" style="font-weight: 600;">--</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Source:</span>
+            <span style="color: var(--text-muted);" data-i18n="source">Source:</span>
             <span id="modal-source" style="font-weight: 600;">Voice Input 🎤</span>
           </div>
         </div>
 
-        <button id="modal-dismiss-btn" class="btn btn-primary" style="margin-top: 20px; padding: 10px;">
-          Close / बंद करें
+        <button id="modal-dismiss-btn" class="btn btn-primary" style="margin-top: 20px; padding: 10px;" data-i18n="close">
+          Close
         </button>
       </div>
     </div>
@@ -138,7 +137,7 @@
           <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
-        <span>Home / होम</span>
+        <span data-i18n="navHome">Home</span>
       </a>
 
       <a href="customers.html" class="nav-item" data-tab="customers">
@@ -148,7 +147,7 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
-        <span>Customers / ग्राहक</span>
+        <span data-i18n="navCustomers">Customers</span>
       </a>
 
       <!-- Center Big Mic Button -->
@@ -165,7 +164,7 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span>History / इतिहास</span>
+        <span data-i18n="navHistory">History</span>
       </a>
     </nav>
 
@@ -175,6 +174,7 @@
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/lang.js"></script>
   <script>
     // State
     let currentTransactions = [];
@@ -183,7 +183,6 @@
       if (!checkAuth()) return;
 
       initNavbar("home");
-      setupLanguageToggle();
       setupLogout();
       setupPullToRefresh();
       setupModal();
@@ -199,6 +198,13 @@
       }
 
       await loadDashboardData();
+
+      // Listen for language change to re-render transactions dynamically
+      window.addEventListener("languageChanged", () => {
+        if (currentTransactions.length > 0) {
+          renderTransactions(currentTransactions);
+        }
+      });
     });
 
     /**
@@ -210,7 +216,6 @@
         const sumRes = await getDashboardSummary();
         if (sumRes.ok && sumRes.data) {
           const d = sumRes.data;
-          // debit is sales, credit is collection, balance is pending
           const salesPaise = d.payment_paise || d.debit_paise || d.sales_paise || 0;
           const collectionPaise = d.credit_paise || d.collection_paise || 0;
           const pendingPaise = d.pending_paise || d.balance_paise || 0;
@@ -219,7 +224,6 @@
           document.getElementById("val-today-collection").textContent = formatPaise(collectionPaise);
           document.getElementById("val-today-pending").textContent = formatPaise(pendingPaise);
         } else {
-          // Defaults if backend has not recorded entries today yet
           document.getElementById("val-today-sales").textContent = "₹0";
           document.getElementById("val-today-collection").textContent = "₹0";
           document.getElementById("val-today-pending").textContent = "₹0";
@@ -243,8 +247,8 @@
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="8" y1="12" x2="16" y2="12"></line>
               </svg>
-              <p style="font-weight: 600;">No transactions yet / कोई लेन-देन नहीं</p>
-              <p style="font-size: 13px; margin-top: 4px;">बोलकर एंट्री लिखने के लिए बीच का माइक दबाएं</p>
+              <p style="font-weight: 600;">${t("noTransactionsYet", "No transactions yet")}</p>
+              <p style="font-size: 13px; margin-top: 4px;">${t("noTransactionsSub", "Tap the center mic button to record an entry")}</p>
             </div>
           `;
         }
@@ -260,13 +264,14 @@
       const container = document.getElementById("txn-list-container");
       container.innerHTML = "";
 
-      txns.forEach((t, idx) => {
-        const isCredit = t.direction === "credit";
+      txns.forEach((tData) => {
+        const isCredit = tData.direction === "credit";
         const amtPrefix = isCredit ? "+ " : "- ";
         const amtClass = isCredit ? "credit" : "debit";
-        const name = t.customer_name || t.name || "Customer";
+        const name = tData.customer_name || tData.name || "Customer";
         const initial = name.charAt(0).toUpperCase();
-        const timeStr = t.recorded_at ? formatTime(t.recorded_at) : "Just now";
+        const timeStr = tData.recorded_at ? formatTime(tData.recorded_at) : "Just now";
+        const dirLabel = isCredit ? t("collection", "Collection") : t("sale", "Sale");
 
         const item = document.createElement("div");
         item.className = "txn-item";
@@ -275,15 +280,15 @@
             <div class="txn-avatar">${initial}</div>
             <div>
               <div class="txn-name">${escapeHtml(name)}</div>
-              <div class="txn-time">${timeStr} • ${isCredit ? "जमा / Collection" : "उधार / Sale"}</div>
+              <div class="txn-time">${timeStr} • ${dirLabel}</div>
             </div>
           </div>
           <div class="txn-amount ${amtClass}">
-            ${amtPrefix}${formatPaise(t.amount_paise || (t.amount ? t.amount * 100 : 0))}
+            ${amtPrefix}${formatPaise(tData.amount_paise || (tData.amount ? tData.amount * 100 : 0))}
           </div>
         `;
 
-        item.addEventListener("click", () => openTransactionModal(t));
+        item.addEventListener("click", () => openTransactionModal(tData));
         container.appendChild(item);
       });
     }
@@ -319,56 +324,27 @@
       });
     }
 
-    function openTransactionModal(t) {
+    function openTransactionModal(tData) {
       const overlay = document.getElementById("txn-modal");
-      const isCredit = t.direction === "credit";
-      const name = t.customer_name || t.name || "Customer";
+      const isCredit = tData.direction === "credit";
+      const name = tData.customer_name || tData.name || "Customer";
 
       document.getElementById("modal-customer").textContent = name;
       document.getElementById("modal-avatar").textContent = name.charAt(0).toUpperCase();
 
-      const amtVal = formatPaise(t.amount_paise || (t.amount ? t.amount * 100 : 0));
+      const amtVal = formatPaise(tData.amount_paise || (tData.amount ? tData.amount * 100 : 0));
       const amtEl = document.getElementById("modal-amount");
       amtEl.textContent = amtVal;
       amtEl.style.color = isCredit ? "var(--primary)" : "var(--danger)";
 
       const badge = document.getElementById("modal-badge");
       badge.className = `status-pill ${isCredit ? "credit" : "debit"}`;
-      badge.textContent = isCredit ? "Collection / जमा लिया" : "Credit Given / सामान उधार दिया";
+      badge.textContent = isCredit ? t("collection", "Collection") : t("creditGiven", "Credit Given");
 
-      document.getElementById("modal-time").textContent = t.recorded_at ? formatDate(t.recorded_at) + " " + formatTime(t.recorded_at) : "Today";
-      document.getElementById("modal-source").textContent = t.source === "voice" ? "Voice Input 🎤" : "Manual";
+      document.getElementById("modal-time").textContent = tData.recorded_at ? formatDate(tData.recorded_at) + " " + formatTime(tData.recorded_at) : "Today";
+      document.getElementById("modal-source").textContent = tData.source === "voice" ? `${t("voiceInput", "Voice Input")} 🎤` : t("manualInput", "Manual");
 
       overlay.classList.add("open");
-    }
-
-    /**
-     * Language Toggle
-     */
-    function setupLanguageToggle() {
-      const btnEn = document.getElementById("lang-btn-en");
-      const btnHi = document.getElementById("lang-btn-hi");
-      const curLang = getLang();
-
-      if (curLang === "hi") {
-        btnHi.classList.add("active");
-        btnEn.classList.remove("active");
-      } else {
-        btnEn.classList.add("active");
-        btnHi.classList.remove("active");
-      }
-
-      btnEn.addEventListener("click", () => {
-        setLang("en");
-        btnEn.classList.add("active");
-        btnHi.classList.remove("active");
-      });
-
-      btnHi.addEventListener("click", () => {
-        setLang("hi");
-        btnHi.classList.add("active");
-        btnEn.classList.remove("active");
-      });
     }
 
     /**
@@ -389,7 +365,7 @@
       manualBtn.addEventListener("click", async () => {
         manualBtn.textContent = "⏳...";
         await loadDashboardData();
-        manualBtn.textContent = "🔄 Refresh";
+        manualBtn.textContent = t("refresh", "🔄 Refresh");
       });
 
       let startY = 0;
