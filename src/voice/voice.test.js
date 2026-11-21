@@ -4,6 +4,17 @@ import { LocalVad, calculateRms } from './localVad.js';
 import { useVoiceStore } from './voiceStore.js';
 import { defaultPlayer, AudioPlayer } from './player.js';
 import { defaultSocket } from './voiceSocket.js';
+import {
+  enqueueOfflineTurn,
+  getOfflineQueueCount,
+  getOfflineQueueItems,
+  removeOfflineItem,
+  clearOfflineQueue,
+  syncOfflineQueue,
+  encodeWav,
+  resetOfflineStore,
+  MAX_OFFLINE_RECORDINGS,
+} from './offlineQueue.js';
 
 describe('Voice System Tests', () => {
   beforeEach(() => {
@@ -263,6 +274,259 @@ describe('Voice System Tests', () => {
       await player.replay();
       expect(playSpy).toHaveBeenCalledTimes(2);
       expect(playSpy).toHaveBeenLastCalledWith(player.lastAudioBlob);
+    });
+  });
+
+  describe('7. Offline Queue and Sync (idb-keyval & bk-offline)', () => {
+    let fakeDb;
+
+    beforeEach(async () => {
+      // Setup fake IndexedDB
+      const databases = new Map();
+      fakeDb = {
+        _databases: databases,
+        open(dbName, version = 1) {
+          const req = {
+            result: null,
+            error: null,
+            onsuccess: null,
+            onerror: null,
+            onupgradeneeded: null,
+          };
+
+          queueMicrotask(() => {
+            let dbStores = databases.get(dbName);
+            const isNew = !dbStores;
+            if (isNew) {
+              dbStores = new Map();
+              databases.set(dbName, dbStores);
+            }
+
+            const db = {
+              name: dbName,
+              createObjectStore(storeName) {
+                if (!dbStores.has(storeName)) {
+                  dbStores.set(storeName, new Map());
+                }
+                return {};
+              },
+              transaction(storeName, mode) {
+                const tx = {
+                  oncomplete: null,
+                  onerror: null,
+                  onabort: null,
+                  objectStore(sName) {
+                    const storeMap = dbStores.get(sName) || new Map();
+                    return {
+                      transaction: tx,
+                      get(key) {
+                        const r = { result: storeMap.get(key), onsuccess: null, onerror: null };
+                        queueMicrotask(() => r.onsuccess && r.onsuccess({ target: r }));
+                        return r;
+                      },
+                      put(val, key) {
+                        storeMap.set(key, val);
+                        const r = { result: key, onsuccess: null, onerror: null };
+                        queueMicrotask(() => {
+                          r.onsuccess && r.onsuccess({ target: r });
+                          tx.oncomplete && tx.oncomplete({ target: tx });
+                        });
+                        return r;
+                      },
+                      delete(key) {
+                        storeMap.delete(key);
+                        const r = { result: undefined, onsuccess: null, onerror: null };
+                        queueMicrotask(() => {
+                          r.onsuccess && r.onsuccess({ target: r });
+                          tx.oncomplete && tx.oncomplete({ target: tx });
+                        });
+                        return r;
+                      },
+                      getAll() {
+                        const r = { result: Array.from(storeMap.values()), onsuccess: null, onerror: null };
+                        queueMicrotask(() => r.onsuccess && r.onsuccess({ target: r }));
+                        return r;
+                      },
+                      getAllKeys() {
+                        const r = { result: Array.from(storeMap.keys()), onsuccess: null, onerror: null };
+                        queueMicrotask(() => r.onsuccess && r.onsuccess({ target: r }));
+                        return r;
+                      },
+                      clear() {
+                        storeMap.clear();
+                        const r = { result: undefined, onsuccess: null, onerror: null };
+                        queueMicrotask(() => {
+                          r.onsuccess && r.onsuccess({ target: r });
+                          tx.oncomplete && tx.oncomplete({ target: tx });
+                        });
+                        return r;
+                      },
+                    };
+                  },
+                };
+                return tx;
+              },
+            };
+
+            req.result = db;
+            if (isNew && req.onupgradeneeded) {
+              req.onupgradeneeded({ target: req });
+            }
+            if (req.onsuccess) {
+              req.onsuccess({ target: req });
+            }
+          });
+
+          return req;
+        },
+      };
+
+      globalThis.indexedDB = fakeDb;
+      if (typeof window !== 'undefined') {
+        window.indexedDB = fakeDb;
+      }
+      resetOfflineStore();
+      await clearOfflineQueue();
+    });
+
+    it('a queued item survives a reload (fake IndexedDB)', async () => {
+      const turnWav = encodeWav([new Int16Array(512).fill(100)]);
+      const enqueued = await enqueueOfflineTurn({
+        idempotency_key: 'idemp-uuid-1',
+        recorded_at: '2026-11-21T19:00:00.000Z',
+        wav: turnWav,
+      });
+
+      expect(enqueued).toBe(true);
+      expect(await getOfflineQueueCount()).toBe(1);
+
+      // Simulate a browser reload by resetting store connection cache while keeping fake IndexedDB intact
+      resetOfflineStore();
+
+      // Read items back from the store
+      const items = await getOfflineQueueItems();
+      expect(items.length).toBe(1);
+      expect(items[0].idempotency_key).toBe('idemp-uuid-1');
+      expect(items[0].recorded_at).toBe('2026-11-21T19:00:00.000Z');
+      expect(items[0].wav).toBeDefined();
+    });
+
+    it('a successful upload removes it', async () => {
+      const turnWav = encodeWav([new Int16Array(512).fill(50)]);
+      await enqueueOfflineTurn({
+        idempotency_key: 'idemp-success-1',
+        recorded_at: '2026-11-21T19:05:00.000Z',
+        wav: turnWav,
+      });
+
+      expect(await getOfflineQueueCount()).toBe(1);
+
+      const entryEvents = [];
+      const notSavedMsgs = [];
+      let syncingState = false;
+
+      // Mock fetch returning success
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          turn_id: 'turn-123',
+          events: [
+            {
+              type: 'entry',
+              turn_id: 'turn-123',
+              entry: { id: 55, amount_paise: 25000, customer_name: 'Suresh' },
+            },
+          ],
+        }),
+      });
+
+      try {
+        await syncOfflineQueue({
+          onEntryEvent: (ev) => entryEvents.push(ev),
+          onNotSaved: (ns) => notSavedMsgs.push(ns),
+          onSyncStateChange: (syncing) => {
+            syncingState = syncing;
+          },
+        });
+
+        // The item must be removed from queue
+        expect(await getOfflineQueueCount()).toBe(0);
+        expect(entryEvents.length).toBe(1);
+        expect(entryEvents[0].entry.customer_name).toBe('Suresh');
+        expect(syncingState).toBe(false);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('a failed upload keeps it', async () => {
+      const turnWav = encodeWav([new Int16Array(512).fill(20)]);
+      await enqueueOfflineTurn({
+        idempotency_key: 'idemp-fail-1',
+        recorded_at: '2026-11-21T19:10:00.000Z',
+        wav: turnWav,
+      });
+
+      expect(await getOfflineQueueCount()).toBe(1);
+
+      // Mock fetch network error
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network disconnected'));
+
+      try {
+        await syncOfflineQueue();
+
+        // Must still keep the item in queue
+        expect(await getOfflineQueueCount()).toBe(1);
+        const items = await getOfflineQueueItems();
+        expect(items[0].idempotency_key).toBe('idemp-fail-1');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('the 21st recording is refused', async () => {
+      // Queue 20 recordings
+      for (let i = 1; i <= 20; i++) {
+        const ok = await enqueueOfflineTurn({
+          idempotency_key: `turn-${i}`,
+          recorded_at: '2026-11-21T19:00:00.000Z',
+          wav: encodeWav([new Int16Array(512).fill(i)]),
+        });
+        expect(ok).toBe(true);
+      }
+
+      expect(await getOfflineQueueCount()).toBe(20);
+
+      // 21st recording must be refused
+      const ok21 = await enqueueOfflineTurn({
+        idempotency_key: 'turn-21',
+        recorded_at: '2026-11-21T19:00:00.000Z',
+        wav: encodeWav([new Int16Array(512).fill(21)]),
+      });
+
+      expect(ok21).toBe(false);
+      expect(await getOfflineQueueCount()).toBe(20);
+    });
+
+    it('dismissNotSaved(turnId) removes that item from notSaved', () => {
+      const store = useVoiceStore.getState();
+      useVoiceStore.setState({
+        notSaved: [
+          { type: 'not_saved', turn_id: 'turn-ns-1', text: '500 udhaar', say: 'Could not save' },
+          { type: 'not_saved', turn_id: 'turn-ns-2', text: '100 jama', say: 'Could not save' },
+        ],
+      });
+
+      expect(useVoiceStore.getState().notSaved.length).toBe(2);
+
+      useVoiceStore.getState().dismissNotSaved('turn-ns-1');
+
+      const remaining = useVoiceStore.getState().notSaved;
+      expect(remaining.length).toBe(1);
+      expect(remaining[0].turn_id).toBe('turn-ns-2');
     });
   });
 });

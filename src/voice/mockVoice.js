@@ -14,7 +14,14 @@ export const useMockVoiceStore = create((set, get) => ({
   pendingQuestion: null,
   lastAnswerSay: '',
   queuedCount: 0,
+  syncing: false,
   notSaved: [],
+
+  dismissNotSaved: (turnId) => {
+    set((s) => ({
+      notSaved: (s.notSaved || []).filter((x) => (x.turn_id || x.turnId) !== turnId),
+    }));
+  },
 
   setDemoTime: (timeIso) => {},
 
