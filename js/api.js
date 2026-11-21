@@ -107,6 +107,73 @@ async function register(shopName, ownerName, phone, password) {
   });
 }
 
+/**
+ * Fetch dashboard summary (sales, collections, pending).
+ * Calls GET /api/dashboard/summary or fallback /summary/today
+ * @returns {Promise<object>}
+ */
+async function getDashboardSummary() {
+  const res = await apiCall("/api/dashboard/summary", "GET");
+  if (res.ok) return res;
+  // Fallback to contracts.md summary route if custom API is not mapped
+  return await apiCall("/summary/today", "GET");
+}
+
+/**
+ * Fetch transactions list for given date.
+ * Calls GET /api/transactions?date=today
+ * @param {string} [date="today"]
+ * @returns {Promise<object>}
+ */
+async function getTransactions(date = "today") {
+  return await apiCall(`/api/transactions?date=${encodeURIComponent(date)}`, "GET");
+}
+
+/**
+ * Record a ledger transaction.
+ * Calls POST /api/transactions
+ * @param {object} transactionData
+ * @returns {Promise<object>}
+ */
+async function createTransaction(transactionData) {
+  return await apiCall("/api/transactions", "POST", transactionData);
+}
+
+/**
+ * REST Fallback for audio transcription.
+ * Sends audio blob via multipart/form-data.
+ * @param {Blob} audioBlob
+ * @returns {Promise<object>}
+ */
+async function transcribeAudio(audioBlob) {
+  const url = `${BASE_URL}/api/transcribe`;
+  const token = typeof getToken === "function" ? getToken() : localStorage.getItem("bk_token");
+  const formData = new FormData();
+  formData.append("audio", audioBlob, "recording.webm");
+
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      // Fallback to contracts.md sync/audio endpoint if available
+      return await apiCall("/sync/audio", "POST", formData);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (err) {
+    console.warn("Transcribe audio error:", err);
+    return { ok: false, offline: true, error: err.message };
+  }
+}
+
 // Export for module/script use
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
@@ -114,5 +181,9 @@ if (typeof module !== "undefined" && module.exports) {
     apiCall,
     login,
     register,
+    getDashboardSummary,
+    getTransactions,
+    createTransaction,
+    transcribeAudio,
   };
 }

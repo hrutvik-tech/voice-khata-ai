@@ -1,27 +1,40 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>बोलकर लिखें | Bolta Khata AI — Voice</title>
+  <title>Voice Ledger | Bolta Khata AI — बोलकर लिखें</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="app-container">
     
+    <!-- Top Header -->
     <header class="page-header">
       <div>
-        <h1>बोलकर लिखें / Voice Entry</h1>
-        <div class="page-subtitle">हिंदी या अंग्रेजी में बोलें</div>
+        <h1 style="font-size: 19px; color: var(--primary);">Voice Input / बोलकर लिखें</h1>
+        <div class="page-subtitle">Speak in Hindi or English</div>
+      </div>
+      
+      <!-- Top Right Language Switcher -->
+      <div class="lang-switch" role="group" aria-label="Language Selector">
+        <button id="lang-btn-en" type="button" class="lang-option active" data-lang="en">EN</button>
+        <button id="lang-btn-hi" type="button" class="lang-option" data-lang="hi">HI</button>
       </div>
     </header>
 
-    <main class="page-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <!-- Offline Indicator Banner -->
+    <div id="offline-indicator-banner" class="offline-banner hidden">
+      ⚠️ Offline Mode / ऑफ़लाइन मोड
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="page-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65vh; text-align: center;">
       
-      <!-- Big Mic Trigger -->
-      <div style="position: relative; margin-bottom: 28px;">
-        <button id="voice-trigger" style="width: 100px; height: 100px; border-radius: 50%; background: var(--primary); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(46,125,50,0.4); cursor: pointer; transition: transform 0.2s;">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Center 80px+ Round Microphone Button -->
+      <div style="margin: 20px 0 16px 0; position: relative;">
+        <button id="btn-voice-mic" class="mic-btn-large" aria-label="Tap to Speak">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
             <line x1="12" y1="19" x2="12" y2="22"></line>
@@ -29,31 +42,103 @@
         </button>
       </div>
 
-      <h2 id="voice-status" style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
-        माइक दबाकर बोलें / Tap to Speak
+      <!-- State Status Display -->
+      <h2 id="voice-status-text" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">
+        🎤 बोलिए / Tap to speak
       </h2>
-      <p style="font-size: 14px; color: var(--text-muted); max-width: 280px; margin-bottom: 24px;">
+      <p id="voice-prompt-text" style="font-size: 13px; color: var(--text-muted); max-width: 290px; margin-bottom: 20px;">
         उदा. "रमेश ने 500 रुपये दिए" या "सुरेश का 300 उधार"
       </p>
 
-      <!-- Transcript Box -->
-      <div id="transcript-box" class="card" style="width: 100%; text-align: left; min-height: 90px; background: #FFFFFF;">
-        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">सुना गया / Transcript:</div>
-        <div id="transcript-text" style="font-size: 15px; font-weight: 500; color: var(--text-main);">
-          (अभी कुछ नहीं बोला गया / Waiting for voice...)
+      <!-- Confirmation Screen Box (State: CONFIRMING) -->
+      <div id="voice-confirm-box" class="confirm-box hidden" style="width: 100%; max-width: 360px;">
+        <div style="font-size: 15px; font-weight: 800; margin-bottom: 10px; color: var(--primary);">
+          पुष्टि करें / Confirm Entry:
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label">ग्राहक / Customer:</span>
+          <span class="confirm-val" id="conf-customer">Ramesh Kumar</span>
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label">राशि / Amount:</span>
+          <span class="confirm-val" id="conf-amount" style="font-size: 20px; color: var(--primary);">₹500</span>
+        </div>
+
+        <div class="confirm-row">
+          <span class="confirm-label">प्रकार / Type:</span>
+          <span class="status-pill credit" id="conf-type">उधार वसूली / Collection</span>
+        </div>
+
+        <!-- Confirm and Change Actions -->
+        <div class="confirm-actions">
+          <button id="btn-conf-change" class="btn btn-outline" style="flex: 1; padding: 12px 10px; font-size: 15px;">
+            ✗ बदलें / Change
+          </button>
+          <button id="btn-conf-ok" class="btn btn-primary" style="flex: 1; padding: 12px 10px; font-size: 15px;">
+            ✓ सही है / Confirm
+          </button>
+        </div>
+      </div>
+
+      <!-- Success Box (State: SUCCESS) -->
+      <div id="voice-success-box" class="card hidden" style="width: 100%; max-width: 340px; background: #E8F5E9; border-color: #C8E6C9; padding: 20px; margin-top: 16px;">
+        <div style="font-size: 40px; color: var(--primary); margin-bottom: 6px;">✓</div>
+        <div id="success-msg" style="font-size: 18px; font-weight: 700; color: var(--primary-dark);">
+          ✓ दर्ज हो गया / Entry recorded
+        </div>
+      </div>
+
+      <!-- Error Box (State: ERROR) -->
+      <div id="voice-error-box" class="card hidden" style="width: 100%; max-width: 340px; background: #FFEBEE; border-color: #FFCDD2; padding: 20px; margin-top: 16px;">
+        <div style="font-size: 32px; color: var(--danger); margin-bottom: 6px;">⚠️</div>
+        <div id="voice-error-msg" style="font-size: 15px; font-weight: 600; color: var(--danger); margin-bottom: 14px;">
+          समझ नहीं आया, दोबारा बोलिए / Could not understand. Please try again.
+        </div>
+        <button id="btn-retry" class="btn btn-primary" style="padding: 10px 16px; font-size: 15px;">
+          दोबारा कोशिश करें / Retry
+        </button>
+      </div>
+
+      <!-- Manual Change Options Modal/Drawer -->
+      <div id="change-options-modal" class="modal-overlay">
+        <div class="modal-card">
+          <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 14px;">बदलाव करें / Edit Entry</h3>
+          
+          <div class="form-group">
+            <label class="form-label">प्रकार बदलें / Change Direction:</label>
+            <div style="display: flex; gap: 10px;">
+              <button id="btn-switch-credit" type="button" class="btn btn-outline" style="flex: 1; font-size: 14px;">
+                जमा / Collection
+              </button>
+              <button id="btn-switch-debit" type="button" class="btn btn-outline" style="flex: 1; font-size: 14px;">
+                उधार / Credit Given
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="btn-re-record" class="btn btn-outline" style="flex: 1; font-size: 14px;">
+              🎙️ दोबारा बोलें / Speak Again
+            </button>
+            <button id="btn-save-edit" class="btn btn-primary" style="flex: 1; font-size: 14px;">
+              सेव करें / Save
+            </button>
+          </div>
         </div>
       </div>
 
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar (Center Mic Active) -->
     <nav class="navbar">
       <a href="dashboard.html" class="nav-item" data-tab="home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
-        <span>होम / Home</span>
+        <span>Home / होम</span>
       </a>
 
       <a href="customers.html" class="nav-item" data-tab="customers">
@@ -63,9 +148,10 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
-        <span>ग्राहक / Customers</span>
+        <span>Customers / ग्राहक</span>
       </a>
 
+      <!-- Center Voice Mic Active -->
       <a href="voice.html" class="nav-mic-btn active" data-tab="voice" aria-label="Voice Ledger" style="background: var(--accent);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
@@ -79,19 +165,110 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span>इतिहास / History</span>
+        <span>History / इतिहास</span>
       </a>
     </nav>
 
   </div>
 
+  <!-- Scripts -->
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/voice.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      checkAuth();
+      if (!checkAuth()) return;
+
       initNavbar("voice");
+      updateOfflineBanner();
+
+      const btnMic = document.getElementById("btn-voice-mic");
+      const btnConfOk = document.getElementById("btn-conf-ok");
+      const btnConfChange = document.getElementById("btn-conf-change");
+      const btnRetry = document.getElementById("btn-retry");
+      const changeModal = document.getElementById("change-options-modal");
+      const btnReRecord = document.getElementById("btn-re-record");
+      const btnSaveEdit = document.getElementById("btn-save-edit");
+      const btnSwitchCredit = document.getElementById("btn-switch-credit");
+      const btnSwitchDebit = document.getElementById("btn-switch-debit");
+
+      // Mic tap handling
+      btnMic.addEventListener("click", async () => {
+        if (currentVoiceState === VOICE_STATES.IDLE || currentVoiceState === VOICE_STATES.ERROR || currentVoiceState === VOICE_STATES.SUCCESS) {
+          const permitted = await initMic();
+          if (permitted) {
+            await startRecording();
+          }
+        } else if (currentVoiceState === VOICE_STATES.LISTENING) {
+          stopRecording();
+        }
+      });
+
+      // Confirm button
+      btnConfOk.addEventListener("click", async () => {
+        await confirmEntry();
+      });
+
+      // Change button -> open edit options
+      btnConfChange.addEventListener("click", () => {
+        changeModal.classList.add("open");
+      });
+
+      // Edit modal options
+      btnSwitchCredit.addEventListener("click", () => {
+        if (lastInterpretedData) {
+          lastInterpretedData.direction = "credit";
+          document.getElementById("conf-type").textContent = "उधार वसूली / Collection (जमा)";
+          document.getElementById("conf-type").className = "status-pill credit";
+        }
+        changeModal.classList.remove("open");
+      });
+
+      btnSwitchDebit.addEventListener("click", () => {
+        if (lastInterpretedData) {
+          lastInterpretedData.direction = "debit";
+          document.getElementById("conf-type").textContent = "उधार दिया / Credit Given";
+          document.getElementById("conf-type").className = "status-pill debit";
+        }
+        changeModal.classList.remove("open");
+      });
+
+      btnReRecord.addEventListener("click", () => {
+        changeModal.classList.remove("open");
+        setVoiceState(VOICE_STATES.IDLE);
+      });
+
+      btnSaveEdit.addEventListener("click", () => {
+        changeModal.classList.remove("open");
+      });
+
+      // Retry button
+      btnRetry.addEventListener("click", () => {
+        setVoiceState(VOICE_STATES.IDLE);
+      });
+
+      // Language buttons
+      const btnEn = document.getElementById("lang-btn-en");
+      const btnHi = document.getElementById("lang-btn-hi");
+      const curLang = getLang();
+
+      if (curLang === "hi") {
+        btnHi.classList.add("active");
+        btnEn.classList.remove("active");
+      }
+
+      btnEn.addEventListener("click", () => {
+        setLang("en");
+        btnEn.classList.add("active");
+        btnHi.classList.remove("active");
+      });
+
+      btnHi.addEventListener("click", () => {
+        setLang("hi");
+        btnHi.classList.add("active");
+        btnEn.classList.remove("active");
+      });
     });
   </script>
 </body>
