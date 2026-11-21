@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>बोलता खाता | Bolta Khata AI — Login</title>
+  <title>Bolta Khata AI | बोलता खाता — Login</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="app-container no-nav">
-    <div class="page-content" style="padding-top: 36px;">
+    
+    <!-- Top Right Language Switcher -->
+    <div class="top-bar-lang">
+      <div class="lang-switch" role="group" aria-label="Language Selector">
+        <button id="lang-btn-en" type="button" class="lang-option active" data-lang="en">English</button>
+        <button id="lang-btn-hi" type="button" class="lang-option" data-lang="hi">हिंदी</button>
+      </div>
+    </div>
+
+    <div class="page-content" style="padding-top: 16px;">
       
       <!-- App Header / Logo -->
       <div class="text-center mb-4">
@@ -19,9 +28,9 @@
             <line x1="12" y1="19" x2="12" y2="22"></line>
           </svg>
         </div>
-        <h1 style="font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">बोलता खाता</h1>
-        <p style="font-size: 14px; font-weight: 600; color: var(--text-main);">Bolta Khata AI</p>
-        <p class="page-subtitle" style="margin-top: 4px;">किराना का वॉइस लेजर / Voice-first digital ledger</p>
+        <h1 id="i18n-app-title" style="font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">Bolta Khata</h1>
+        <p id="i18n-app-sub" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">बोलता खाता AI</p>
+        <p id="i18n-tagline" class="page-subtitle" style="margin-top: 4px;">Voice-first digital ledger for Kirana shops</p>
       </div>
 
       <!-- Main Card -->
@@ -29,15 +38,15 @@
         
         <!-- Toggle Tabs -->
         <div class="tab-toggle">
-          <button id="tab-login" type="button" class="tab-btn active">लॉगिन / Log In</button>
-          <button id="tab-register" type="button" class="tab-btn">नया खाता / Register</button>
+          <button id="tab-login" type="button" class="tab-btn active">Log In</button>
+          <button id="tab-register" type="button" class="tab-btn">Register</button>
         </div>
 
         <!-- Login Form -->
         <form id="form-login">
           <div class="form-group">
-            <label class="form-label" for="login-phone">
-              फ़ोन नंबर <span class="sub">/ Mobile Number</span>
+            <label id="lbl-login-phone" class="form-label" for="login-phone">
+              Mobile Number
             </label>
             <input 
               id="login-phone" 
@@ -45,62 +54,62 @@
               type="tel" 
               inputmode="numeric" 
               pattern="[6-9][0-9]{9}" 
-              placeholder="10 अंकों का मोबाइल नंबर" 
+              placeholder="10-digit mobile number" 
               maxlength="10" 
               required
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="login-password">
-              पिन या पासवर्ड <span class="sub">/ PIN or Password</span>
+            <label id="lbl-login-password" class="form-label" for="login-password">
+              PIN or Password
             </label>
             <input 
               id="login-password" 
               class="input-field" 
               type="password" 
               inputmode="numeric" 
-              placeholder="4 या 6 अंकों का पिन" 
+              placeholder="4 or 6-digit PIN" 
               required
             >
           </div>
 
-          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
-            लॉगिन करें / Log In
+          <button id="btn-login-submit" type="submit" class="btn btn-primary" style="margin-top: 10px;">
+            Log In
           </button>
         </form>
 
         <!-- Register Form -->
         <form id="form-register" class="hidden">
           <div class="form-group">
-            <label class="form-label" for="reg-shop-name">
-              दुकान का नाम <span class="sub">/ Shop Name</span>
+            <label id="lbl-reg-shop-name" class="form-label" for="reg-shop-name">
+              Shop Name
             </label>
             <input 
               id="reg-shop-name" 
               class="input-field" 
               type="text" 
-              placeholder="उदा. गुप्ता जनरल स्टोर" 
+              placeholder="e.g. Gupta General Store" 
               required
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="reg-owner-name">
-              दुकानदार का नाम <span class="sub">/ Owner Name</span>
+            <label id="lbl-reg-owner-name" class="form-label" for="reg-owner-name">
+              Owner Name
             </label>
             <input 
               id="reg-owner-name" 
               class="input-field" 
               type="text" 
-              placeholder="उदा. रमेश कुमार" 
+              placeholder="e.g. Ramesh Kumar" 
               required
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="reg-phone">
-              फ़ोन नंबर <span class="sub">/ Mobile Number</span>
+            <label id="lbl-reg-phone" class="form-label" for="reg-phone">
+              Mobile Number
             </label>
             <input 
               id="reg-phone" 
@@ -108,37 +117,37 @@
               type="tel" 
               inputmode="numeric" 
               pattern="[6-9][0-9]{9}" 
-              placeholder="10 अंकों का मोबाइल नंबर" 
+              placeholder="10-digit mobile number" 
               maxlength="10" 
               required
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="reg-password">
-              पिन सेट करें <span class="sub">/ Set 4-digit PIN</span>
+            <label id="lbl-reg-password" class="form-label" for="reg-password">
+              Set PIN
             </label>
             <input 
               id="reg-password" 
               class="input-field" 
               type="password" 
               inputmode="numeric" 
-              placeholder="4 अंकों का गुप्त पिन" 
+              placeholder="4-digit secret PIN" 
               minlength="4" 
               required
             >
           </div>
 
-          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
-            नया खाता बनाएं / Register
+          <button id="btn-register-submit" type="submit" class="btn btn-primary" style="margin-top: 10px;">
+            Create Account
           </button>
         </form>
 
       </div>
 
       <div class="text-center" style="margin-top: 24px;">
-        <p style="font-size: 13px; color: var(--text-muted);">
-          सुरक्षित और आसान वॉइस डिजिटल बही-खाता
+        <p id="i18n-footer" style="font-size: 13px; color: var(--text-muted);">
+          Secure & simple digital voice ledger for Indian retail
         </p>
       </div>
 

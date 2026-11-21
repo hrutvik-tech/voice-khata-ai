@@ -8,6 +8,7 @@
 
 const TOKEN_KEY = "bk_token";
 const SHOP_KEY = "bk_shop";
+const LANG_KEY = "bk_lang";
 const OFFLINE_KEY = "bk-offline";
 const OFFLINE_QUEUE_MAX = 20;
 
@@ -67,6 +68,30 @@ function setShop(shop) {
     }
   } catch (e) {
     console.error("Shop write error:", e);
+  }
+}
+
+/**
+ * Get preferred UI language ('en' by default).
+ * @returns {string}
+ */
+function getLang() {
+  try {
+    return localStorage.getItem(LANG_KEY) || "en";
+  } catch (e) {
+    return "en";
+  }
+}
+
+/**
+ * Save preferred UI language ('en' | 'hi').
+ * @param {string} lang
+ */
+function setLang(lang) {
+  try {
+    localStorage.setItem(LANG_KEY, lang || "en");
+  } catch (e) {
+    console.error("Language write error:", e);
   }
 }
 
