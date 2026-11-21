@@ -1,75 +1,192 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>इतिहास | Bolta Khata AI — History</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#2E7D32" />
+  <title>History — Bolta Khata</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Date filter chips ── */
+    .date-filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 16px 4px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .date-filter-row::-webkit-scrollbar { display: none; }
+    .date-filter-btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border: 1.5px solid #ccc;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      color: #424242;
+      transition: all 0.15s;
+      min-height: 36px;
+    }
+    .date-filter-btn.active {
+      background: #2E7D32;
+      border-color: #2E7D32;
+      color: #fff;
+    }
+    .date-filter-btn:hover:not(.active) {
+      border-color: #2E7D32;
+      color: #2E7D32;
+    }
+    /* ── Customer filter row ── */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+    }
+    .filter-row label {
+      font-size: 13px;
+      color: #757575;
+      white-space: nowrap;
+    }
+    .filter-row select {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      color: #212121;
+      min-height: 40px;
+    }
+    /* ── Custom date input ── */
+    #custom-date {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      border: 1.5px solid #ccc;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #424242;
+      background: #fff;
+      min-height: 36px;
+    }
+    /* ── Load More button ── */
+    #btn-load-more {
+      display: none;
+      margin: 12px auto 20px;
+      padding: 12px 32px;
+      background: #fff;
+      border: 1.5px solid #2E7D32;
+      color: #2E7D32;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+    }
+    #btn-load-more:hover {
+      background: #f1f8e9;
+    }
+    /* ── TXN amount alignment ── */
+    .txn-amount {
+      text-align: right;
+      min-width: 80px;
+      line-height: 1.3;
+    }
+    .txn-amount.credit { color: #2E7D32; }
+    .txn-amount.debit  { color: #c62828; }
+  </style>
 </head>
 <body>
   <div class="app-container">
-    
-    <header class="page-header">
+
+    <!-- ── Header ─────────────────────────────────────── -->
+    <header class="page-header" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px;">
       <div>
-        <h1>लेन-देन इतिहास / History</h1>
-        <div class="page-subtitle">पिछली सभी प्रविष्टियाँ / Past entries</div>
+        <div style="font-size:11px; color:#a5d6a7; font-weight:500; letter-spacing:.5px;">BOLTA KHATA</div>
+        <h1 style="margin:0; font-size:20px; font-weight:800; color:#fff;">
+          लेन-देन <span style="font-weight:400; font-size:16px;">/ Transactions</span>
+        </h1>
       </div>
+      <button id="lang-toggle" class="lang-option" aria-label="Toggle language"
+        style="background:rgba(255,255,255,0.15); border:none; color:#fff; font-weight:700; border-radius:16px; padding:4px 12px; font-size:14px; cursor:pointer;">
+        हिं
+      </button>
     </header>
 
-    <main class="page-content">
+    <!-- ── Date quick-filter chips ──────────────────── -->
+    <div class="date-filter-row" role="group" aria-label="Date range filter">
+      <button class="date-filter-btn active" data-range="today">आज / Today</button>
+      <button class="date-filter-btn" data-range="yesterday">कल / Yesterday</button>
+      <button class="date-filter-btn" data-range="week">इस हफ़्ते / This Week</button>
+      <button class="date-filter-btn" data-range="month">इस महीने / This Month</button>
+      <input type="date" id="custom-date" aria-label="Custom date" title="Pick a date" />
+    </div>
+
+    <!-- ── Customer filter ──────────────────────────── -->
+    <div class="filter-row">
+      <label for="customer-filter">👤</label>
+      <select id="customer-filter" aria-label="Filter by customer">
+        <option value="">All customers / सभी ग्राहक</option>
+        <!-- Populated by history.js -->
+      </select>
+    </div>
+
+    <!-- ── Transaction list ─────────────────────────── -->
+    <div class="page-content" style="padding:0 0 80px; overflow-y:auto;">
       <div id="history-list">
-        <div class="card text-center" style="padding: 32px 16px; color: var(--text-muted);">
-          <p>कोई प्रविष्टि नहीं मिली / No recent entries</p>
+        <div style="text-align:center; padding:40px 20px; color:#9e9e9e;">
+          <div class="spinner" style="margin:0 auto 12px;"></div>
+          <div>Loading transactions…</div>
         </div>
       </div>
-    </main>
 
-    <!-- Bottom Navigation Bar -->
+      <!-- Load More -->
+      <div style="text-align:center;">
+        <button id="btn-load-more">और दिखाएं / Load More</button>
+      </div>
+    </div>
+
+    <!-- ── Bottom navigation ─────────────────────────── -->
     <nav class="navbar">
       <a href="dashboard.html" class="nav-item" data-tab="home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        <span>होम / Home</span>
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
       </a>
-
       <a href="customers.html" class="nav-item" data-tab="customers">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <span>ग्राहक / Customers</span>
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Customers</span>
       </a>
-
-      <a href="voice.html" class="nav-mic-btn" data-tab="voice" aria-label="Voice Ledger">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-          <line x1="12" y1="19" x2="12" y2="22"></line>
-        </svg>
+      <a href="voice.html" class="nav-item nav-mic-btn" data-tab="voice" aria-label="Voice entry">
+        <span class="nav-icon">🎤</span>
       </a>
-
       <a href="history.html" class="nav-item active" data-tab="history">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <span>इतिहास / History</span>
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">History</span>
+      </a>
+      <a href="index.html" class="nav-item" data-tab="logout" id="nav-logout">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Logout</span>
       </a>
     </nav>
 
-  </div>
+  </div><!-- /.app-container -->
 
+  <!-- ── Scripts ───────────────────────────────────── -->
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/history.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      checkAuth();
-      initNavbar("history");
+    // Logout handler
+    document.getElementById("nav-logout").addEventListener("click", (e) => {
+      e.preventDefault();
+      if (typeof clearAuth === "function") clearAuth();
+      else { localStorage.removeItem("bk_token"); localStorage.removeItem("bk_shop"); }
+      window.location.href = "index.html";
     });
   </script>
 </body>
