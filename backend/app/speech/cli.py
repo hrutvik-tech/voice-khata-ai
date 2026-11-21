@@ -7,6 +7,7 @@ import sys
 import wave
 
 from app.speech.stt import SttSession
+from app.speech.tts import synthesize
 
 
 def _ensure_api_key() -> None:
@@ -128,6 +129,24 @@ async def run_stt_stream(folder_path: str) -> None:
     print()
 
 
+async def run_tts(text: str, language: str, out_file: str) -> None:
+    _ensure_api_key()
+    out_path = Path(out_file)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"Synthesizing: \"{text}\" ({language}) -> {out_file}...")
+    chunk_count = 0
+    total_bytes = 0
+
+    with open(out_path, "wb") as f:
+        async for chunk in synthesize(text, language):  # type: ignore[arg-type]
+            f.write(chunk)
+            chunk_count += 1
+            total_bytes += len(chunk)
+
+    print(f"Saved {total_bytes} bytes ({chunk_count} chunks) to {out_file}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Voice Khata Speech CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -135,9 +154,16 @@ def main() -> None:
     stt_parser = subparsers.add_parser("stt", help="Run realtime STT on a folder of WAV files")
     stt_parser.add_argument("folder", help="Path to folder containing WAV files and expected.json")
 
+    tts_parser = subparsers.add_parser("tts", help="Synthesize text to speech")
+    tts_parser.add_argument("text", help="Text to speak")
+    tts_parser.add_argument("language", choices=["hi", "kn", "en"], help="Language code (hi, kn, en)")
+    tts_parser.add_argument("out_file", help="Path to save output audio file")
+
     args = parser.parse_args()
     if args.command == "stt":
         asyncio.run(run_stt_stream(args.folder))
+    elif args.command == "tts":
+        asyncio.run(run_tts(args.text, args.language, args.out_file))
 
 
 if __name__ == "__main__":
