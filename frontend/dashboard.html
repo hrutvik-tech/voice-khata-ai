@@ -1,62 +1,135 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>डैशबोर्ड | Bolta Khata AI</title>
+  <title>Dashboard | Bolta Khata AI — बोलता खाता</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="app-container">
+  <div class="app-container" id="dashboard-container">
     
     <!-- Top Header -->
     <header class="page-header">
-      <div>
-        <h1 id="shop-title">बोलता खाता</h1>
-        <div id="shop-owner" class="page-subtitle">लोड हो रहा है...</div>
+      <div style="flex: 1;">
+        <h1 id="shop-title" style="font-size: 19px; color: var(--primary); margin-bottom: 2px;">Bolta Khata</h1>
+        <div id="today-date-text" class="page-subtitle">Loading date...</div>
       </div>
-      <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 12px; font-size: 13px;">
-        लॉगआउट
-      </button>
+      
+      <!-- Top Right Controls: Language & Logout -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="lang-switch" role="group" aria-label="Language Selector">
+          <button id="lang-btn-en" type="button" class="lang-option active" data-lang="en">EN</button>
+          <button id="lang-btn-hi" type="button" class="lang-option" data-lang="hi">HI</button>
+        </div>
+        <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 32px;" title="Logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Main Content -->
-    <main class="page-content">
+    <main class="page-content" id="dashboard-content">
       
-      <!-- Daily Summary Card -->
-      <div class="card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white;">
-        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 4px;">आज का हिसाब / Today's Summary</div>
-        <div style="font-size: 28px; font-weight: 800; margin-bottom: 12px;" id="today-total">₹0</div>
+      <!-- Pull to refresh hint -->
+      <div id="refresh-indicator" style="text-align: center; font-size: 12px; color: var(--text-muted); height: 0; overflow: hidden; transition: height 0.2s;">
+        <span class="spinner" style="display: inline-block; width: 14px; height: 14px; border-width: 2px; vertical-align: middle; margin-right: 4px; border-top-color: var(--primary); border-color: rgba(46,125,50,0.3);"></span>
+        <span id="txt-refreshing">Refreshing... / ताज़ा हो रहा है...</span>
+      </div>
+
+      <!-- 3 Summary Cards at Top -->
+      <div class="summary-grid">
+        <!-- Sales (Debit) -->
+        <div class="summary-card">
+          <div class="label" id="lbl-today-sales">Today's Sales<br><span style="font-size: 10px; font-weight: normal;">आज की बिक्री</span></div>
+          <div class="value value-debit" id="val-today-sales">₹0</div>
+        </div>
         
-        <div style="display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
-          <div style="flex: 1;">
-            <div style="font-size: 12px; opacity: 0.85;">उधार / Credit</div>
-            <div style="font-size: 16px; font-weight: 700;" id="today-credit">₹0</div>
-          </div>
-          <div style="flex: 1;">
-            <div style="font-size: 12px; opacity: 0.85;">जमा / Received</div>
-            <div style="font-size: 16px; font-weight: 700;" id="today-payment">₹0</div>
-          </div>
+        <!-- Collection (Credit) -->
+        <div class="summary-card">
+          <div class="label" id="lbl-today-collection">Today's Collection<br><span style="font-size: 10px; font-weight: normal;">आज की वसूली</span></div>
+          <div class="value value-credit" id="val-today-collection">₹0</div>
+        </div>
+
+        <!-- Total Pending -->
+        <div class="summary-card">
+          <div class="label" id="lbl-total-pending">Total Pending<br><span style="font-size: 10px; font-weight: normal;">कुल बकाया</span></div>
+          <div class="value value-pending" id="val-total-pending">₹0</div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="card">
-        <h2 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">त्वरित कार्य / Quick Actions</h2>
-        <a href="voice.html" class="btn btn-primary" style="margin-bottom: 10px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Quick Mic Action Banner -->
+      <div class="card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; margin-bottom: 16px;">
+        <div>
+          <div style="font-size: 15px; font-weight: 700;" id="txt-banner-title">Speak & Record / बोलकर लिखें</div>
+          <div style="font-size: 12px; opacity: 0.9;" id="txt-banner-sub">"Ramesh ne 500 diye"</div>
+        </div>
+        <a href="voice.html" style="background: #FFFFFF; color: var(--primary); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); text-decoration: none;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
             <line x1="12" y1="19" x2="12" y2="22"></line>
           </svg>
-          बोलकर एंट्री लिखें / Voice Entry
-        </a>
-        <a href="customers.html" class="btn btn-outline">
-          ग्राहकों की सूची / View Customers
         </a>
       </div>
 
+      <!-- Recent Transactions Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main);" id="heading-recent-txns">
+          Recent Transactions / हाल के लेन-देन
+        </h2>
+        <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;" id="btn-manual-refresh">
+          🔄 Refresh
+        </span>
+      </div>
+
+      <!-- Transactions List (Last 10) -->
+      <div id="txn-list-container" class="txn-list">
+        <div class="card text-center" style="padding: 30px 16px; color: var(--text-muted);">
+          <span class="spinner" style="display: inline-block; width: 22px; height: 22px; border-top-color: var(--primary); border-color: rgba(46,125,50,0.3); margin-bottom: 8px;"></span>
+          <p id="txt-loading-txns">Loading transactions... / लेन-देन लोड हो रहे हैं...</p>
+        </div>
+      </div>
+
     </main>
+
+    <!-- Transaction Detail Modal -->
+    <div id="txn-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 18px; font-weight: 700;" id="modal-title">Transaction Details</h3>
+          <button id="modal-close" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div id="modal-avatar" style="width: 52px; height: 52px; border-radius: 50%; background: #E8F5E9; color: var(--primary); font-size: 20px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+            R
+          </div>
+          <div id="modal-customer" style="font-size: 18px; font-weight: 700;">Ramesh Kumar</div>
+          <div id="modal-amount" style="font-size: 26px; font-weight: 800; margin-top: 6px;">₹500</div>
+          <div id="modal-badge" class="status-pill credit" style="margin-top: 4px;">Collection / जमा</div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 14px; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Date & Time:</span>
+            <span id="modal-time" style="font-weight: 600;">--</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Source:</span>
+            <span id="modal-source" style="font-weight: 600;">Voice Input 🎤</span>
+          </div>
+        </div>
+
+        <button id="modal-dismiss-btn" class="btn btn-primary" style="margin-top: 20px; padding: 10px;">
+          Close / बंद करें
+        </button>
+      </div>
+    </div>
 
     <!-- Bottom Navigation Bar -->
     <nav class="navbar">
@@ -65,7 +138,7 @@
           <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
-        <span>होम / Home</span>
+        <span>Home / होम</span>
       </a>
 
       <a href="customers.html" class="nav-item" data-tab="customers">
@@ -75,10 +148,10 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
-        <span>ग्राहक / Customers</span>
+        <span>Customers / ग्राहक</span>
       </a>
 
-      <!-- Center Voice Mic -->
+      <!-- Center Big Mic Button -->
       <a href="voice.html" class="nav-mic-btn" data-tab="voice" aria-label="Voice Ledger">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
@@ -92,7 +165,7 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span>इतिहास / History</span>
+        <span>History / इतिहास</span>
       </a>
     </nav>
 
@@ -103,22 +176,250 @@
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      checkAuth();
+    // State
+    let currentTransactions = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!checkAuth()) return;
+
+      initNavbar("home");
+      setupLanguageToggle();
+      setupLogout();
+      setupPullToRefresh();
+      setupModal();
+
+      // Set today's date in header
+      const today = new Date();
+      document.getElementById("today-date-text").textContent = formatDate(today);
+
+      // Populate shop name
       const shop = getShop();
-      if (shop) {
-        if (shop.shop_name) document.getElementById("shop-title").textContent = shop.shop_name;
-        if (shop.owner_name) document.getElementById("shop-owner").textContent = `दुकानदार: ${shop.owner_name}`;
+      if (shop && shop.shop_name) {
+        document.getElementById("shop-title").textContent = shop.shop_name;
       }
-      
-      const logoutBtn = document.getElementById("btn-logout");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-          clearAuth();
-          window.location.href = "index.html";
-        });
-      }
+
+      await loadDashboardData();
     });
+
+    /**
+     * Fetch summary and transactions from backend
+     */
+    async function loadDashboardData() {
+      // 1. Load Summary
+      try {
+        const sumRes = await getDashboardSummary();
+        if (sumRes.ok && sumRes.data) {
+          const d = sumRes.data;
+          // debit is sales, credit is collection, balance is pending
+          const salesPaise = d.payment_paise || d.debit_paise || d.sales_paise || 0;
+          const collectionPaise = d.credit_paise || d.collection_paise || 0;
+          const pendingPaise = d.pending_paise || d.balance_paise || 0;
+
+          document.getElementById("val-today-sales").textContent = formatPaise(salesPaise);
+          document.getElementById("val-today-collection").textContent = formatPaise(collectionPaise);
+          document.getElementById("val-today-pending").textContent = formatPaise(pendingPaise);
+        } else {
+          // Defaults if backend has not recorded entries today yet
+          document.getElementById("val-today-sales").textContent = "₹0";
+          document.getElementById("val-today-collection").textContent = "₹0";
+          document.getElementById("val-today-pending").textContent = "₹0";
+        }
+      } catch (e) {
+        console.warn("Summary load error:", e);
+      }
+
+      // 2. Load Transactions
+      try {
+        const txnRes = await getTransactions("today");
+        const listContainer = document.getElementById("txn-list-container");
+
+        if (txnRes.ok && Array.isArray(txnRes.data) && txnRes.data.length > 0) {
+          currentTransactions = txnRes.data.slice(0, 10);
+          renderTransactions(currentTransactions);
+        } else {
+          listContainer.innerHTML = `
+            <div class="card text-center" style="padding: 32px 16px; color: var(--text-muted);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <p style="font-weight: 600;">No transactions yet / कोई लेन-देन नहीं</p>
+              <p style="font-size: 13px; margin-top: 4px;">बोलकर एंट्री लिखने के लिए बीच का माइक दबाएं</p>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.warn("Transactions load error:", e);
+      }
+    }
+
+    /**
+     * Render transactions list into DOM
+     */
+    function renderTransactions(txns) {
+      const container = document.getElementById("txn-list-container");
+      container.innerHTML = "";
+
+      txns.forEach((t, idx) => {
+        const isCredit = t.direction === "credit";
+        const amtPrefix = isCredit ? "+ " : "- ";
+        const amtClass = isCredit ? "credit" : "debit";
+        const name = t.customer_name || t.name || "Customer";
+        const initial = name.charAt(0).toUpperCase();
+        const timeStr = t.recorded_at ? formatTime(t.recorded_at) : "Just now";
+
+        const item = document.createElement("div");
+        item.className = "txn-item";
+        item.innerHTML = `
+          <div class="txn-info">
+            <div class="txn-avatar">${initial}</div>
+            <div>
+              <div class="txn-name">${escapeHtml(name)}</div>
+              <div class="txn-time">${timeStr} • ${isCredit ? "जमा / Collection" : "उधार / Sale"}</div>
+            </div>
+          </div>
+          <div class="txn-amount ${amtClass}">
+            ${amtPrefix}${formatPaise(t.amount_paise || (t.amount ? t.amount * 100 : 0))}
+          </div>
+        `;
+
+        item.addEventListener("click", () => openTransactionModal(t));
+        container.appendChild(item);
+      });
+    }
+
+    function formatTime(isoStr) {
+      try {
+        const d = new Date(isoStr);
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    /**
+     * Modal Handling
+     */
+    function setupModal() {
+      const overlay = document.getElementById("txn-modal");
+      const closeBtn = document.getElementById("modal-close");
+      const dismissBtn = document.getElementById("modal-dismiss-btn");
+
+      const close = () => overlay.classList.remove("open");
+      closeBtn.addEventListener("click", close);
+      dismissBtn.addEventListener("click", close);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) close();
+      });
+    }
+
+    function openTransactionModal(t) {
+      const overlay = document.getElementById("txn-modal");
+      const isCredit = t.direction === "credit";
+      const name = t.customer_name || t.name || "Customer";
+
+      document.getElementById("modal-customer").textContent = name;
+      document.getElementById("modal-avatar").textContent = name.charAt(0).toUpperCase();
+
+      const amtVal = formatPaise(t.amount_paise || (t.amount ? t.amount * 100 : 0));
+      const amtEl = document.getElementById("modal-amount");
+      amtEl.textContent = amtVal;
+      amtEl.style.color = isCredit ? "var(--primary)" : "var(--danger)";
+
+      const badge = document.getElementById("modal-badge");
+      badge.className = `status-pill ${isCredit ? "credit" : "debit"}`;
+      badge.textContent = isCredit ? "Collection / जमा लिया" : "Credit Given / सामान उधार दिया";
+
+      document.getElementById("modal-time").textContent = t.recorded_at ? formatDate(t.recorded_at) + " " + formatTime(t.recorded_at) : "Today";
+      document.getElementById("modal-source").textContent = t.source === "voice" ? "Voice Input 🎤" : "Manual";
+
+      overlay.classList.add("open");
+    }
+
+    /**
+     * Language Toggle
+     */
+    function setupLanguageToggle() {
+      const btnEn = document.getElementById("lang-btn-en");
+      const btnHi = document.getElementById("lang-btn-hi");
+      const curLang = getLang();
+
+      if (curLang === "hi") {
+        btnHi.classList.add("active");
+        btnEn.classList.remove("active");
+      } else {
+        btnEn.classList.add("active");
+        btnHi.classList.remove("active");
+      }
+
+      btnEn.addEventListener("click", () => {
+        setLang("en");
+        btnEn.classList.add("active");
+        btnHi.classList.remove("active");
+      });
+
+      btnHi.addEventListener("click", () => {
+        setLang("hi");
+        btnHi.classList.add("active");
+        btnEn.classList.remove("active");
+      });
+    }
+
+    /**
+     * Logout
+     */
+    function setupLogout() {
+      document.getElementById("btn-logout").addEventListener("click", () => {
+        clearAuth();
+        window.location.href = "index.html";
+      });
+    }
+
+    /**
+     * Pull to refresh handling
+     */
+    function setupPullToRefresh() {
+      const manualBtn = document.getElementById("btn-manual-refresh");
+      manualBtn.addEventListener("click", async () => {
+        manualBtn.textContent = "⏳...";
+        await loadDashboardData();
+        manualBtn.textContent = "🔄 Refresh";
+      });
+
+      let startY = 0;
+      let isPulling = false;
+      const content = document.getElementById("dashboard-content");
+      const indicator = document.getElementById("refresh-indicator");
+
+      window.addEventListener("touchstart", (e) => {
+        if (window.scrollY === 0) {
+          startY = e.touches[0].pageY;
+          isPulling = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener("touchmove", (e) => {
+        if (!isPulling) return;
+        const y = e.touches[0].pageY;
+        if (y - startY > 40 && window.scrollY === 0) {
+          indicator.style.height = "30px";
+        }
+      }, { passive: true });
+
+      window.addEventListener("touchend", async () => {
+        if (isPulling && indicator.style.height === "30px") {
+          await loadDashboardData();
+          indicator.style.height = "0";
+        }
+        isPulling = false;
+      });
+    }
   </script>
 </body>
 </html>
