@@ -16,10 +16,18 @@ export class AudioPlayer {
     this.lastAudioBlob = null;
     this.isPlaying = false;
     this.cooldownTimer = null;
+    this.onPlaybackStart = null;
 
     if (this.audioElement) {
       this.audioElement.onplay = () => {
         this.isPlaying = true;
+        if (this.onPlaybackStart) {
+          try {
+            this.onPlaybackStart();
+          } catch (e) {
+            console.error('Error in onPlaybackStart:', e);
+          }
+        }
         if (this.cooldownTimer) {
           clearTimeout(this.cooldownTimer);
           this.cooldownTimer = null;
@@ -84,6 +92,9 @@ export class AudioPlayer {
       const url = URL.createObjectURL(blob);
       this.audioElement.src = url;
       await this.audioElement.play();
+      if (this.onPlaybackStart) {
+        this.onPlaybackStart();
+      }
     } catch (err) {
       console.warn('Playback error:', err);
       this.isPlaying = false;
