@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>बोलता खाता | Bolta Khata AI — Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container no-nav">
+    <div class="page-content" style="padding-top: 36px;">
+      
+      <!-- App Header / Logo -->
+      <div class="text-center mb-4">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; background: var(--primary-light); color: var(--primary); margin-bottom: 12px; box-shadow: var(--shadow-sm);">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">बोलता खाता</h1>
+        <p style="font-size: 14px; font-weight: 600; color: var(--text-main);">Bolta Khata AI</p>
+        <p class="page-subtitle" style="margin-top: 4px;">किराना का वॉइस लेजर / Voice-first digital ledger</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="card" style="box-shadow: var(--shadow-md);">
+        
+        <!-- Toggle Tabs -->
+        <div class="tab-toggle">
+          <button id="tab-login" type="button" class="tab-btn active">लॉगिन / Log In</button>
+          <button id="tab-register" type="button" class="tab-btn">नया खाता / Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login">
+          <div class="form-group">
+            <label class="form-label" for="login-phone">
+              फ़ोन नंबर <span class="sub">/ Mobile Number</span>
+            </label>
+            <input 
+              id="login-phone" 
+              class="input-field" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[6-9][0-9]{9}" 
+              placeholder="10 अंकों का मोबाइल नंबर" 
+              maxlength="10" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">
+              पिन या पासवर्ड <span class="sub">/ PIN or Password</span>
+            </label>
+            <input 
+              id="login-password" 
+              class="input-field" 
+              type="password" 
+              inputmode="numeric" 
+              placeholder="4 या 6 अंकों का पिन" 
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+            लॉगिन करें / Log In
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="reg-shop-name">
+              दुकान का नाम <span class="sub">/ Shop Name</span>
+            </label>
+            <input 
+              id="reg-shop-name" 
+              class="input-field" 
+              type="text" 
+              placeholder="उदा. गुप्ता जनरल स्टोर" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-owner-name">
+              दुकानदार का नाम <span class="sub">/ Owner Name</span>
+            </label>
+            <input 
+              id="reg-owner-name" 
+              class="input-field" 
+              type="text" 
+              placeholder="उदा. रमेश कुमार" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-phone">
+              फ़ोन नंबर <span class="sub">/ Mobile Number</span>
+            </label>
+            <input 
+              id="reg-phone" 
+              class="input-field" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[6-9][0-9]{9}" 
+              placeholder="10 अंकों का मोबाइल नंबर" 
+              maxlength="10" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-password">
+              पिन सेट करें <span class="sub">/ Set 4-digit PIN</span>
+            </label>
+            <input 
+              id="reg-password" 
+              class="input-field" 
+              type="password" 
+              inputmode="numeric" 
+              placeholder="4 अंकों का गुप्त पिन" 
+              minlength="4" 
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+            नया खाता बनाएं / Register
+          </button>
+        </form>
+
+      </div>
+
+      <div class="text-center" style="margin-top: 24px;">
+        <p style="font-size: 13px; color: var(--text-muted);">
+          सुरक्षित और आसान वॉइस डिजिटल बही-खाता
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

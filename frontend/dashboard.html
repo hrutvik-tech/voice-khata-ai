@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>डैशबोर्ड | Bolta Khata AI</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="page-header">
+      <div>
+        <h1 id="shop-title">बोलता खाता</h1>
+        <div id="shop-owner" class="page-subtitle">लोड हो रहा है...</div>
+      </div>
+      <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 12px; font-size: 13px;">
+        लॉगआउट
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+      
+      <!-- Daily Summary Card -->
+      <div class="card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white;">
+        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 4px;">आज का हिसाब / Today's Summary</div>
+        <div style="font-size: 28px; font-weight: 800; margin-bottom: 12px;" id="today-total">₹0</div>
+        
+        <div style="display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+          <div style="flex: 1;">
+            <div style="font-size: 12px; opacity: 0.85;">उधार / Credit</div>
+            <div style="font-size: 16px; font-weight: 700;" id="today-credit">₹0</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; opacity: 0.85;">जमा / Received</div>
+            <div style="font-size: 16px; font-weight: 700;" id="today-payment">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <h2 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">त्वरित कार्य / Quick Actions</h2>
+        <a href="voice.html" class="btn btn-primary" style="margin-bottom: 10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+          बोलकर एंट्री लिखें / Voice Entry
+        </a>
+        <a href="customers.html" class="btn btn-outline">
+          ग्राहकों की सूची / View Customers
+        </a>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="navbar">
+      <a href="dashboard.html" class="nav-item active" data-tab="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>होम / Home</span>
+      </a>
+
+      <a href="customers.html" class="nav-item" data-tab="customers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>ग्राहक / Customers</span>
+      </a>
+
+      <!-- Center Voice Mic -->
+      <a href="voice.html" class="nav-mic-btn" data-tab="voice" aria-label="Voice Ledger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+        </svg>
+      </a>
+
+      <a href="history.html" class="nav-item" data-tab="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>इतिहास / History</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      const shop = getShop();
+      if (shop) {
+        if (shop.shop_name) document.getElementById("shop-title").textContent = shop.shop_name;
+        if (shop.owner_name) document.getElementById("shop-owner").textContent = `दुकानदार: ${shop.owner_name}`;
+      }
+      
+      const logoutBtn = document.getElementById("btn-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          clearAuth();
+          window.location.href = "index.html";
+        });
+      }
+    });
+  </script>
+</body>
+</html>
