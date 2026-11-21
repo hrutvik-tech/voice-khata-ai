@@ -7,10 +7,56 @@ import { startFrameTap } from './frameTap.js';
 import { initWakeWord } from './wakeWord.js';
 import { getOfflineQueueCount } from './offlineQueue.js';
 
+// Setup window.__bkLatency and window.__bkLatencyReport
+if (typeof window !== 'undefined') {
+  window.__bkLatency = window.__bkLatency || [];
+  window.__bkLatencyReport = function () {
+    const records = window.__bkLatency || [];
+    if (records.length === 0) {
+      console.log('No latency records found.');
+      return { median: 0, p90: 0, count: 0 };
+    }
+    const durations = records
+      .map((r) => r.durationMs)
+      .filter((d) => typeof d === 'number' && !isNaN(d))
+      .sort((a, b) => a - b);
+
+    if (durations.length === 0) {
+      return { median: 0, p90: 0, count: 0 };
+    }
+
+    const mid = Math.floor(durations.length / 2);
+    const median = durations.length % 2 !== 0 ? durations[mid] : (durations[mid - 1] + durations[mid]) / 2;
+
+    const p90Index = Math.ceil(0.9 * durations.length) - 1;
+    const p90 = durations[Math.max(0, p90Index)];
+
+    console.log(`Commit-to-Playback Latency (N=${durations.length}):`);
+    console.log(`  Median: ${median.toFixed(2)} ms`);
+    console.log(`  90th percentile: ${p90.toFixed(2)} ms`);
+
+    return { median, p90, count: durations.length };
+  };
+}
+
 export const useVoiceStore = create((set, get) => {
   let activeTurnId = null;
   let isSendingFrames = false;
   let demoTime = null;
+  let currentTurnLatency = null;
+
+  defaultPlayer.onPlaybackStart = () => {
+    if (currentTurnLatency && currentTurnLatency.playbackStartTime === null) {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      currentTurnLatency.playbackStartTime = now;
+      currentTurnLatency.durationMs = now - currentTurnLatency.commitTime;
+
+      if (typeof window !== 'undefined') {
+        window.__bkLatency = window.__bkLatency || [];
+        window.__bkLatency.push({ ...currentTurnLatency });
+      }
+    }
+  };
 
   const vad = new LocalVad({
     onSpeechStart: () => {
@@ -19,12 +65,21 @@ export const useVoiceStore = create((set, get) => {
     onTurnEnd: (reason) => {
       if (isSendingFrames && activeTurnId) {
         isSendingFrames = false;
+        const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        currentTurnLatency = {
+          turnId: activeTurnId,
+          commitTime: now,
+          audioStartTime: null,
+          playbackStartTime: null,
+          durationMs: null,
+        };
         defaultSocket.send({ type: 'commit', turn_id: activeTurnId });
       }
     },
     onCancel: (reason) => {
       if (isSendingFrames && activeTurnId) {
         isSendingFrames = false;
+        currentTurnLatency = null;
         defaultSocket.send({ type: 'cancel', turn_id: activeTurnId });
         set({ state: 'resting' });
         activeTurnId = null;
@@ -94,6 +149,9 @@ export const useVoiceStore = create((set, get) => {
     const { type } = msg;
 
     if (type === 'audio_start') {
+      if (currentTurnLatency) {
+        currentTurnLatency.audioStartTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      }
       defaultPlayer.startAudio();
       return;
     }
@@ -247,6 +305,33 @@ export const useVoiceStore = create((set, get) => {
         }
         if (parsed.say) {
           set({ lastAnswerSay: parsed.say });
+        }
+      }
+    },
+
+    _recordCommitLatency: (turnId, commitTime = performance.now()) => {
+      currentTurnLatency = {
+        turnId,
+        commitTime,
+        audioStartTime: null,
+        playbackStartTime: null,
+        durationMs: null,
+      };
+    },
+
+    _recordAudioStartLatency: (audioStartTime = performance.now()) => {
+      if (currentTurnLatency) {
+        currentTurnLatency.audioStartTime = audioStartTime;
+      }
+    },
+
+    _recordPlaybackLatency: (playbackStartTime = performance.now()) => {
+      if (currentTurnLatency) {
+        currentTurnLatency.playbackStartTime = playbackStartTime;
+        currentTurnLatency.durationMs = playbackStartTime - currentTurnLatency.commitTime;
+        if (typeof window !== 'undefined') {
+          window.__bkLatency = window.__bkLatency || [];
+          window.__bkLatency.push({ ...currentTurnLatency });
         }
       }
     },

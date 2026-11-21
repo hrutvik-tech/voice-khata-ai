@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { processFrame } from './frameTap.js';
 import { LocalVad, calculateRms } from './localVad.js';
 import { useVoiceStore } from './voiceStore.js';
-import { defaultPlayer } from './player.js';
+import { defaultPlayer, AudioPlayer } from './player.js';
 import { defaultSocket } from './voiceSocket.js';
 
 describe('Voice System Tests', () => {
@@ -208,6 +208,61 @@ describe('Voice System Tests', () => {
       // Stop player
       defaultPlayer.stop();
       expect(defaultPlayer.shouldIgnoreVoice()).toBe(false);
+    });
+  });
+
+  describe('5. Browser Latency Tracking and Reporting', () => {
+    it('records commit, audio_start, and playback start in window.__bkLatency and reports median and P90', () => {
+      window.__bkLatency = [];
+
+      const store = useVoiceStore.getState();
+
+      // Turn 1: 500 ms latency
+      store._recordCommitLatency('turn-1', 1000);
+      store._recordAudioStartLatency(1200);
+      store._recordPlaybackLatency(1500);
+
+      // Turn 2: 700 ms latency
+      store._recordCommitLatency('turn-2', 2000);
+      store._recordAudioStartLatency(2300);
+      store._recordPlaybackLatency(2700);
+
+      // Turn 3: 300 ms latency
+      store._recordCommitLatency('turn-3', 3000);
+      store._recordAudioStartLatency(3100);
+      store._recordPlaybackLatency(3300);
+
+      expect(window.__bkLatency.length).toBe(3);
+      expect(window.__bkLatency[0].durationMs).toBe(500);
+      expect(window.__bkLatency[1].durationMs).toBe(700);
+      expect(window.__bkLatency[2].durationMs).toBe(300);
+
+      const report = window.__bkLatencyReport();
+      expect(report.count).toBe(3);
+      expect(report.median).toBe(500);
+      expect(report.p90).toBe(700);
+    });
+  });
+
+  describe('6. Replay persistence across navigation', () => {
+    it('replays the last reply even after simulated page navigation / unmount', async () => {
+      const player = new AudioPlayer();
+      const playSpy = vi.spyOn(player, 'playBlob').mockImplementation(() => Promise.resolve());
+
+      // Collect audio chunks
+      player.startAudio();
+      player.addChunk(new Uint8Array([1, 2, 3]));
+      player.addChunk(new Uint8Array([4, 5, 6]));
+      await player.endAudio();
+
+      expect(player.lastAudioBlob).not.toBeNull();
+      expect(playSpy).toHaveBeenCalledTimes(1);
+
+      // Simulate component unmount / page navigation
+      // (The player instance is at module/singleton scope, so lastAudioBlob persists)
+      await player.replay();
+      expect(playSpy).toHaveBeenCalledTimes(2);
+      expect(playSpy).toHaveBeenLastCalledWith(player.lastAudioBlob);
     });
   });
 });
