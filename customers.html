@@ -10,7 +10,7 @@
   <style>
     .search-wrapper {
       position: relative;
-      margin: 0 16px 8px;
+      margin: 0 16px 10px;
     }
     .search-wrapper .search-icon {
       position: absolute;
@@ -25,17 +25,67 @@
       padding-left: 40px;
       width: 100%;
       box-sizing: border-box;
+      border-radius: 12px;
+      border: 1.5px solid #E0E0E0;
+      background: #FFFFFF;
+      font-size: 14px;
+      height: 44px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .add-row {
+    .search-wrapper .input-field:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    }
+    
+    /* Elegant & Well-Managed Action Bar */
+    .customers-action-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px 12px;
+      padding: 0 16px 14px;
+      gap: 12px;
     }
-    .customer-count {
+    .customer-count-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #E8F5E9;
+      color: #1B5E20;
+      border: 1.5px solid #C8E6C9;
+      padding: 7px 14px;
+      border-radius: 20px;
       font-size: 13px;
-      color: #757575;
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      white-space: nowrap;
     }
+    .btn-add-cust {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 20px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(46, 125, 50, 0.3);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-add-cust:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+    }
+    .btn-add-cust:active {
+      transform: scale(0.97);
+    }
+
     #similar-confirm-row {
       background: #fff8e1;
       border: 1px solid #FFB300;
@@ -55,20 +105,21 @@
 <body>
   <div class="app-container">
 
-    <!-- Header -->
-    <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px;">
+    <!-- Header with Crisp Text and Clear Language Switcher -->
+    <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #FFFFFF; border-bottom: 1px solid var(--border);">
       <div>
-        <div style="font-size: 11px; color: #a5d6a7; font-weight: 500; letter-spacing: .5px;">BOLTA KHATA</div>
-        <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #fff;" data-i18n="customersTitle">
+        <div style="font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;">BOLTA KHATA</div>
+        <h1 style="margin: 0; font-size: 21px; font-weight: 800; color: var(--text-main);" data-i18n="customersTitle">
           Customers
         </h1>
       </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 4px 12px; font-size: 13px; font-weight: 700; height: 32px; border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.8); color: #FFFFFF; background: rgba(255,255,255,0.15);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <!-- Prominent, Clear Language Toggle Button -->
+        <button id="lang-toggle" class="btn btn-outline" style="width: auto; padding: 6px 14px; font-size: 13px; font-weight: 800; height: 36px; border-radius: 18px; border: 2px solid var(--primary); color: var(--primary); background: #F1F8E9; box-shadow: 0 1px 4px rgba(46,125,50,0.12); cursor: pointer;" title="Change Language">
           🌐 हिंदी
         </button>
-        <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 32px; border: 1.5px solid rgba(255,255,255,0.8); color: #FFFFFF; background: rgba(255,255,255,0.15);" title="Logout">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button id="btn-logout" class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 12px; height: 36px; border: 1.5px solid var(--border); color: var(--text-muted); background: #FAFAFA; border-radius: 10px; cursor: pointer;" title="Logout">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -77,8 +128,11 @@
       </div>
     </header>
 
+    <!-- Connection state banner (driven by offline.js) -->
+    <div class="bk-conn-banner" style="display:none;"></div>
+
     <!-- Search bar -->
-    <div class="search-wrapper" style="margin-top: 12px;">
+    <div class="search-wrapper" style="margin-top: 14px;">
       <span class="search-icon">🔍</span>
       <input
         id="search-input"
@@ -91,11 +145,15 @@
       />
     </div>
 
-    <!-- Add Customer button + count -->
-    <div class="add-row">
-      <span class="customer-count" id="customer-count"></span>
-      <button id="btn-add-customer" class="btn btn-primary" style="font-size: 14px; padding: 10px 16px; min-height: 44px;" data-i18n="addCustomerBtn">
-        + Add Customer
+    <!-- Add Customer button + Beautiful Count Chip -->
+    <div class="customers-action-bar">
+      <div class="customer-count-chip" id="customer-count">
+        <span>👥</span>
+        <span id="customer-count-text">0 customers</span>
+      </div>
+      <button id="btn-add-customer" class="btn btn-add-cust">
+        <span style="font-size: 16px; font-weight: 900;">+</span>
+        <span data-i18n="addCustomerBtn">Add Customer</span>
       </button>
     </div>
 
@@ -155,7 +213,7 @@
         />
       </div>
 
-      <div class="form-group" style="margin-top: 12px;">
+      <div class="form-group" style="margin-top: 14px;">
         <label class="form-label" for="customer-phone-input">
           <span data-i18n="phoneOptionalLabel">Phone (optional)</span>
         </label>
@@ -163,11 +221,11 @@
           id="customer-phone-input"
           type="tel"
           class="input-field"
+          data-i18n-placeholder="phonePlaceholder"
           placeholder="10-digit mobile number"
-          pattern="[6-9][0-9]{9}"
           autocomplete="tel"
           inputmode="numeric"
-          maxlength="10"
+          maxlength="15"
         />
       </div>
 
