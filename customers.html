@@ -151,9 +151,8 @@
         <span>👥</span>
         <span id="customer-count-text">0 customers</span>
       </div>
-      <button id="btn-add-customer" class="btn btn-add-cust">
-        <span style="font-size: 16px; font-weight: 900;">+</span>
-        <span data-i18n="addCustomerBtn">Add Customer</span>
+      <button id="btn-add-customer" class="btn btn-add-cust" data-i18n="addCustomerBtn">
+        Add Customer
       </button>
     </div>
 
@@ -226,6 +225,51 @@
           autocomplete="tel"
           inputmode="numeric"
           maxlength="15"
+        />
+      </div>
+
+      <!-- Amount Input -->
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label" for="customer-amount-input">
+          <span data-i18n="amountLabel">Amount (₹)</span> <span style="color: #c62828;">*</span>
+        </label>
+        <input
+          id="customer-amount-input"
+          type="number"
+          step="any"
+          min="0"
+          class="input-field"
+          data-i18n-placeholder="amountPlaceholder"
+          placeholder="e.g. 500"
+          inputmode="decimal"
+        />
+      </div>
+
+      <!-- Credit / Debit Direction Toggle -->
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label">
+          <span data-i18n="typeLabel">Type</span> <span style="color: #c62828;">*</span>
+        </label>
+        <div class="direction-toggle-group" style="display: flex; gap: 10px;">
+          <button type="button" id="btn-type-credit" class="btn-dir-toggle active" data-dir="credit" style="flex: 1; padding: 11px 10px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; border: 2px solid #2E7D32; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;">
+            <span data-i18n="creditOption">↓ Credit (Received)</span>
+          </button>
+          <button type="button" id="btn-type-debit" class="btn-dir-toggle" data-dir="debit" style="flex: 1; padding: 11px 10px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; border: 2px solid #E0E0E0; background: #FFFFFF; color: #757575; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;">
+            <span data-i18n="debitOption">↑ Debit (Given)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date and Time of Credit/Debit -->
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label" for="customer-datetime-input">
+          <span data-i18n="dateTimeLabel">Date & Time</span>
+        </label>
+        <input
+          id="customer-datetime-input"
+          type="datetime-local"
+          class="input-field"
+          style="font-size: 14px; height: 44px; padding: 0 12px;"
         />
       </div>
 
