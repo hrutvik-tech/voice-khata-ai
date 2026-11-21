@@ -1,1 +1,1 @@
-"""Voice Khata AI backend package."""
+# backend/app/__init__.py
