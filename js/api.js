@@ -289,6 +289,148 @@ async function transcribeAudio(audioBlob) {
   }
 }
 
+/**
+ * Fetch customer list from API.
+ * Falls back to 5 demo customers if backend is offline.
+ * @param {string} [search=""] - Search query
+ * @returns {Promise<object>}
+ */
+async function getCustomers(search = "") {
+  const query = search ? `?search=${encodeURIComponent(search)}` : "";
+  const res = await apiCall(`/customers${query}`, "GET");
+  if (res.ok && Array.isArray(res.data)) return res;
+
+  // Demo fallback customers (balance_paise: positive = shop to collect, negative = shop owes)
+  return {
+    ok: true,
+    data: [
+      {
+        id: 1,
+        name: "Ramesh Sharma",
+        phone: "9876543210",
+        area: "Lajpat Nagar",
+        balance_paise: 84000,
+        last_activity_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 2,
+        name: "Suresh Verma",
+        phone: "9123456780",
+        area: "Karol Bagh",
+        balance_paise: -50000,
+        last_activity_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 3,
+        name: "Anita Devi",
+        phone: "9988776655",
+        area: "Pitampura",
+        balance_paise: 125000,
+        last_activity_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 4,
+        name: "Anil Gupta",
+        phone: "9811223344",
+        area: "Rohini",
+        balance_paise: 0,
+        last_activity_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 5,
+        name: "Priya Singh",
+        phone: "9700112233",
+        area: "Dwarka",
+        balance_paise: 200000,
+        last_activity_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ],
+  };
+}
+
+/**
+ * Add a new customer via API.
+ * Falls back to demo success if backend is offline.
+ * @param {string} name
+ * @param {string|null} phone
+ * @param {boolean} [confirm=false] - Confirm despite similar-name warning
+ * @returns {Promise<object>}
+ */
+async function addCustomerApi(name, phone = null, confirm = false) {
+  const res = await apiCall("/customers", "POST", {
+    name: name.trim(),
+    phone: phone ? phone.trim() : null,
+    area: null,
+    confirm,
+  });
+
+  if (res.ok || res.status === 409) return res;
+
+  // Demo fallback when backend is offline
+  return {
+    ok: true,
+    status: 201,
+    data: {
+      id: Date.now(),
+      name: name.trim(),
+      phone: phone ? phone.trim() : null,
+      area: null,
+      balance_paise: 0,
+      last_activity_at: new Date().toISOString(),
+    },
+  };
+}
+
+/**
+ * Fetch filtered transactions for history page.
+ * Supports date_from, date_to, customer_id, offset, limit params.
+ * Falls back to 10 demo entries spread across dates if backend is offline.
+ * @param {object} filters
+ * @returns {Promise<object>}
+ */
+async function getTransactionsFiltered(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.append("date_from", filters.date_from);
+  if (filters.date_to) params.append("date_to", filters.date_to);
+  if (filters.customer_id) params.append("customer_id", filters.customer_id);
+  if (filters.offset !== undefined) params.append("offset", filters.offset);
+  if (filters.limit !== undefined) params.append("limit", filters.limit);
+
+  const query = params.toString();
+  const res = await apiCall(`/api/transactions${query ? "?" + query : ""}`, "GET");
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) return res;
+
+  const now = Date.now();
+  const demoEntries = [
+    { id: 101, customer_name: "Ramesh Sharma",  amount_paise: 34000,  direction: "credit", source: "voice",  recorded_at: new Date(now - 1 * 60 * 60 * 1000).toISOString() },
+    { id: 102, customer_name: "Suresh Verma",   amount_paise: 50000,  direction: "debit",  source: "voice",  recorded_at: new Date(now - 2 * 60 * 60 * 1000).toISOString() },
+    { id: 103, customer_name: "Anita Devi",     amount_paise: 25000,  direction: "credit", source: "manual", recorded_at: new Date(now - 3 * 60 * 60 * 1000).toISOString() },
+    { id: 104, customer_name: "Anil Gupta",     amount_paise: 120000, direction: "debit",  source: "voice",  recorded_at: new Date(now - 5 * 60 * 60 * 1000).toISOString() },
+    { id: 105, customer_name: "Priya Singh",    amount_paise: 75000,  direction: "credit", source: "voice",  recorded_at: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 106, customer_name: "Ramesh Sharma",  amount_paise: 15000,  direction: "debit",  source: "manual", recorded_at: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 107, customer_name: "Suresh Verma",   amount_paise: 90000,  direction: "credit", source: "voice",  recorded_at: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 108, customer_name: "Anita Devi",     amount_paise: 44000,  direction: "debit",  source: "voice",  recorded_at: new Date(now - 4 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 109, customer_name: "Priya Singh",    amount_paise: 60000,  direction: "credit", source: "manual", recorded_at: new Date(now - 5 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 110, customer_name: "Anil Gupta",     amount_paise: 30000,  direction: "credit", source: "voice",  recorded_at: new Date(now - 6 * 24 * 60 * 60 * 1000).toISOString() },
+  ];
+
+  // Filter by customer_id if set (demo: match by position in list)
+  let entries = demoEntries;
+  if (filters.customer_id) {
+    // Demo: customer 1 = Ramesh, 2 = Suresh, etc.
+    const nameMap = { 1: "Ramesh Sharma", 2: "Suresh Verma", 3: "Anita Devi", 4: "Anil Gupta", 5: "Priya Singh" };
+    const name = nameMap[parseInt(filters.customer_id)];
+    if (name) entries = entries.filter((e) => e.customer_name === name);
+  }
+
+  // Pagination
+  const offset = filters.offset || 0;
+  const limit = filters.limit || 20;
+  entries = entries.slice(offset, offset + limit);
+
+  return { ok: true, data: entries };
+}
+
 // Export for module/script use
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
@@ -298,7 +440,10 @@ if (typeof module !== "undefined" && module.exports) {
     register,
     getDashboardSummary,
     getTransactions,
+    getTransactionsFiltered,
     createTransaction,
     transcribeAudio,
+    getCustomers,
+    addCustomerApi,
   };
 }
