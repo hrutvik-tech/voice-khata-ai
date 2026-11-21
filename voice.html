@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>बोलकर लिखें | Bolta Khata AI — Voice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <header class="page-header">
+      <div>
+        <h1>बोलकर लिखें / Voice Entry</h1>
+        <div class="page-subtitle">हिंदी या अंग्रेजी में बोलें</div>
+      </div>
+    </header>
+
+    <main class="page-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+      
+      <!-- Big Mic Trigger -->
+      <div style="position: relative; margin-bottom: 28px;">
+        <button id="voice-trigger" style="width: 100px; height: 100px; border-radius: 50%; background: var(--primary); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(46,125,50,0.4); cursor: pointer; transition: transform 0.2s;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </button>
+      </div>
+
+      <h2 id="voice-status" style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+        माइक दबाकर बोलें / Tap to Speak
+      </h2>
+      <p style="font-size: 14px; color: var(--text-muted); max-width: 280px; margin-bottom: 24px;">
+        उदा. "रमेश ने 500 रुपये दिए" या "सुरेश का 300 उधार"
+      </p>
+
+      <!-- Transcript Box -->
+      <div id="transcript-box" class="card" style="width: 100%; text-align: left; min-height: 90px; background: #FFFFFF;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">सुना गया / Transcript:</div>
+        <div id="transcript-text" style="font-size: 15px; font-weight: 500; color: var(--text-main);">
+          (अभी कुछ नहीं बोला गया / Waiting for voice...)
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="navbar">
+      <a href="dashboard.html" class="nav-item" data-tab="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>होम / Home</span>
+      </a>
+
+      <a href="customers.html" class="nav-item" data-tab="customers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>ग्राहक / Customers</span>
+      </a>
+
+      <a href="voice.html" class="nav-mic-btn active" data-tab="voice" aria-label="Voice Ledger" style="background: var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+        </svg>
+      </a>
+
+      <a href="history.html" class="nav-item" data-tab="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>इतिहास / History</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      initNavbar("voice");
+    });
+  </script>
+</body>
+</html>
