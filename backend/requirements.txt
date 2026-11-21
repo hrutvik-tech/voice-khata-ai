@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy>=2.0
+bcrypt
+pyjwt
+python-multipart
+websockets
+httpx
+google-genai
+openai
+rapidfuzz
+cryptography
+pytest
+pytest-asyncio
