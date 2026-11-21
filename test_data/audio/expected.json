@@ -1,0 +1,72 @@
+[
+  {
+    "file": "hi_01.wav",
+    "text": "रमेश का तीन सौ चालीस उधार है",
+    "customer": "Ramesh",
+    "amount_paise": 34000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_02.wav",
+    "text": "सुरेश का तीन सौ चालीस उधार है",
+    "customer": "Suresh",
+    "amount_paise": 34000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_03.wav",
+    "text": "रमेश शर्मा का सात सौ दिया था",
+    "customer": "Ramesh Sharma",
+    "amount_paise": 70000,
+    "direction": "payment"
+  },
+  {
+    "file": "hi_04.wav",
+    "text": "रमेश का सात सौ बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 70000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_05.wav",
+    "text": "रमेश का चालीस उधार बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 4000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_06.wav",
+    "text": "रमेश का ढाई हज़ार उधार है बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 250000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_07.wav",
+    "text": "रमेश का साढ़े सात सौ उधार बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 75000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_08.wav",
+    "text": "रमेश का तीन सौ का उधार है बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 30000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_09.wav",
+    "text": "रमेश का साढ़े तीन सौ उधार है बाकी लिखो",
+    "customer": "Ramesh",
+    "amount_paise": 35000,
+    "direction": "credit"
+  },
+  {
+    "file": "hi_10.wav",
+    "text": "अमीषा कुमारी का तैंतालीस उधार है बाकी लिखो",
+    "customer": "Amisha Kumari",
+    "amount_paise": 4300,
+    "direction": "credit"
+  }
+]
